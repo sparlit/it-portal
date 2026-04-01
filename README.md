@@ -1,5 +1,5 @@
 # IT Management Portal
-## Al Rayes Laundry, Doha, Qatar
+## TSysLab
 
 ![Version](https://img.shields.io/badge/version-4.0-blue)
 ![Next.js](https://img.shields.io/badge/Next.js-16.1-black)
@@ -218,15 +218,15 @@ npx tsx prisma/seed.ts # Seed database
 
 ## License
 
-Proprietary - Al Rayes Laundry, Doha, Qatar
+Proprietary - TSysLab
 
 ---
 
 ## Support
 
 **IT Department**
-- Email: it@alrayes.com
-- IT HOD: Simon Peter
+- Email: simonpeterarl@gmail.com
+- Simon Peter
 
 **Portal Version:** 4.0
 **Last Updated:** March 2026
