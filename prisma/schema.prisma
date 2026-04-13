@@ -1,3 +1,6 @@
+// Production-Grade Multi-tenant Prisma Schema
+// TSysLab Industrial-Grade IT & Laundry Ecosystem
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,406 +10,519 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id            Int       @id @default(autoincrement())
-  username      String    @unique
-  password      String
+// ==========================================
+// CORE MODULE: Multi-tenancy & Auth
+// ==========================================
+
+model Tenant {
+  id            String   @id @default(cuid())
   name          String
-  email         String    @unique
-  role          String    @default("user")
-  department    String?
+  slug          String   @unique
+  address       String?
   phone         String?
-  avatar        String?
-  isActive      Boolean   @default(true)
-  lastLogin     DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  
-  tickets       Ticket[]          @relation("RequesterTickets")
-  assignedTickets Ticket[]        @relation("AssignedTickets")
-  activities    Activity[]
-  notifications Notification[]
-  sessions      Session[]
-  assetsAssigned AssetAssignment[]
-  maintenanceRecords MaintenanceRecord[]
-  
-  @@index([role])
-  @@index([department])
-  @@map("users")
+  email         String?
+  logo          String?
+  plan          String   @default("enterprise")
+  status        String   @default("active")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  users             User[]
+  assets            Asset[]
+  itTickets         ITTicket[]
+  laundryTickets    LaundryTicket[]
+  laundryCustomers  LaundryCustomer[]
+  laundryOrders     LaundryOrder[]
+  laundryServices   LaundryService[]
+  laundrySuppliers  LaundrySupplier[]
+  laundryEquipment  LaundryEquipment[]
+  visitors          Visitor[]
+  meetings          Meeting[]
+  licenses          License[]
+  backups           Backup[]
+  dailyChecks       DailyCheck[]
+  credentials       Credential[]
+  quickNotes        QuickNote[]
+  notebookPages     NotebookPage[]
+  calendarEvents    CalendarEvent[]
+  knowledgeArticles KnowledgeArticle[]
+  activityLogs      ActivityLog[]
+  announcements     Announcement[]
+  budgetItems       BudgetItem[]
+  programmeCharters ProgrammeCharter[]
+  systemAlerts      SystemAlert[]
+  settings          Setting[]
+  serverMonitors    ServerMonitor[]
 }
 
-model Session {
-  id           String   @id @default(uuid())
-  userId       Int
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  token        String   @unique
-  userAgent    String?
-  ipAddress    String?
-  expiresAt    DateTime
-  createdAt    DateTime @default(now())
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String
+  name      String
+  email     String?
+  role      String   @default("user") // 'admin', 'it_manager', 'laundry_manager', 'staff', 'user'
+  status    String   @default("active")
+
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
   
-  @@index([token])
-  @@map("sessions")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
 }
 
-model Activity {
-  id          Int      @id @default(autoincrement())
-  userId      Int
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  action      String
-  entityType  String
-  entityId    Int?
-  details     String?  @db.Text
-  ipAddress   String?
-  createdAt   DateTime @default(now())
-  
-  @@index([userId])
-  @@index([entityType, entityId])
-  @@map("activities")
-}
-
-model Notification {
-  id          Int      @id @default(autoincrement())
-  userId      Int
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  title       String
-  message     String   @db.Text
-  type        String   @default("info")
-  isRead      Boolean  @default(false)
-  link        String?
-  createdAt   DateTime @default(now())
-  
-  @@index([userId, isRead])
-  @@map("notifications")
-}
+// ==========================================
+// IT MANAGEMENT MODULE
+// ==========================================
 
 model Asset {
-  id              Int       @id @default(autoincrement())
-  assetTag        String    @unique
-  name            String
-  category        String
-  subCategory     String?
-  brand           String?
-  model           String?
-  serialNumber    String?   @unique
-  purchaseDate    DateTime?
-  purchasePrice   Decimal?  @db.Decimal(12, 2)
-  warrantyExpiry  DateTime?
-  location        String?
-  building        String?
-  floor           String?
-  room            String?
-  status          String    @default("active")
-  condition       String    @default("good")
-  notes           String?   @db.Text
-  image           String?
-  assignedToId    Int?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id            String   @id @default(cuid())
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+
+  type          String   // 'computer', 'server', 'printer', 'network', 'other'
+  name          String
+  model         String
+  serialNumber  String
+  location      String
+  ipAddress     String?
+  status        String   @default("active")
+  assignedTo    String?
+  purchaseDate  String?
+  warrantyEnd   String?
+  notes         String?  @db.Text
   
-  assignments     AssetAssignment[]
-  maintenanceRecords MaintenanceRecord[]
-  softwareLicenses AssetSoftwareLicense[]
-  
-  @@index([category])
-  @@index([status])
-  @@index([location])
-  @@map("assets")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([tenantId, serialNumber])
+  @@index([tenantId])
 }
 
-model AssetAssignment {
-  id          Int      @id @default(autoincrement())
-  assetId     Int
-  asset       Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
-  userId      Int
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  assignedAt  DateTime @default(now())
-  returnedAt  DateTime?
-  notes       String?
-  assignedBy  String?
-  
-  @@index([assetId])
-  @@index([userId])
-  @@map("asset_assignments")
-}
+model ITTicket {
+  id          String   @id @default(cuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
 
-model MaintenanceRecord {
-  id              Int      @id @default(autoincrement())
-  assetId         Int
-  asset           Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
-  performedById   Int?
-  performedBy     User?    @relation(fields: [performedById], references: [id])
-  type            String
-  description     String   @db.Text
-  cost            Decimal? @db.Decimal(12, 2)
-  startDate       DateTime
-  endDate         DateTime?
-  status          String   @default("scheduled")
-  notes           String?  @db.Text
-  createdAt       DateTime @default(now())
+  ticketId    String   // TKT-IT-001 format
+  title       String
+  description String?  @db.Text
+  priority    String   @default("medium")
+  status      String   @default("open")
+  category    String?
+  requester   String
+  assignedTo  String?
+  resolution  String?  @db.Text
+  slaDeadline String?
   
-  @@index([assetId])
-  @@index([status])
-  @@map("maintenance_records")
-}
-
-model Ticket {
-  id              Int       @id @default(autoincrement())
-  ticketNumber    String    @unique
-  title           String
-  description     String    @db.Text
-  category        String
-  subCategory     String?
-  priority        String    @default("medium")
-  status          String    @default("open")
-  impact          String    @default("low")
-  urgency         String    @default("low")
-  
-  requesterId     Int?
-  requester       User?     @relation("RequesterTickets", fields: [requesterId], references: [id])
-  requesterName   String
-  requesterEmail  String?
-  requesterPhone  String?
-  requesterDept   String?
-  
-  assigneeId      Int?
-  assignee        User?     @relation("AssignedTickets", fields: [assigneeId], references: [id])
-  assignedAt      DateTime?
-  
-  resolution      String?   @db.Text
-  resolvedAt      DateTime?
-  resolvedById    Int?
-  closedAt        DateTime?
-  
-  slaDueDate      DateTime?
-  slaBreached     Boolean   @default(false)
-  
-  assetId         Int?
-  
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
-  comments        TicketComment[]
-  attachments     TicketAttachment[]
-  
-  @@index([status])
-  @@index([priority])
-  @@index([category])
-  @@index([assigneeId])
-  @@index([requesterId])
-  @@map("tickets")
-}
-
-model TicketComment {
-  id          Int      @id @default(autoincrement())
-  ticketId    Int
-  ticket      Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  authorId    Int?
-  authorName  String
-  content     String   @db.Text
-  isInternal  Boolean  @default(false)
   createdAt   DateTime @default(now())
-  
-  @@index([ticketId])
-  @@map("ticket_comments")
+  updatedAt   DateTime @updatedAt
+
+  @@unique([tenantId, ticketId])
+  @@index([tenantId])
 }
 
-model TicketAttachment {
-  id          Int      @id @default(autoincrement())
-  ticketId    Int
-  ticket      Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  filename    String
-  filepath    String
-  filesize    Int
-  mimetype    String
-  uploadedBy  String?
-  uploadedAt  DateTime @default(now())
+// ==========================================
+// LAUNDRY MANAGEMENT MODULE
+// ==========================================
+
+model LaundryCustomer {
+  id          String   @id @default(cuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
   
-  @@index([ticketId])
-  @@map("ticket_attachments")
+  name        String
+  email       String?
+  phone       String
+  address     String?  @db.Text
+  loyaltyTier String   @default("standard")
+  totalOrders Int      @default(0)
+  notes       String?  @db.Text
+  
+  orders      LaundryOrder[]
+  tickets     LaundryTicket[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([tenantId, phone])
 }
+
+model LaundryService {
+  id          String   @id @default(cuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+
+  name        String   // 'Dry Clean', 'Wash & Fold', 'Ironing', 'Stain Removal'
+  category    String   // 'Garment', 'Bedding', 'Curtains'
+  price       Float
+  unit        String   @default("piece") // 'piece', 'kg'
+  estimatedTime Int    @default(24) // in hours
+
+  orderItems  LaundryOrderItem[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([tenantId])
+}
+
+model LaundryOrder {
+  id            String   @id @default(cuid())
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  
+  orderNumber   String   // LND-001
+  customerId    String
+  customer      LaundryCustomer @relation(fields: [customerId], references: [id])
+  
+  status        String   @default("received") // 'received', 'sorting', 'processing', 'quality-check', 'ready', 'out-for-delivery', 'delivered', 'cancelled'
+  totalAmount   Float    @default(0)
+  paymentStatus String   @default("pending") // 'pending', 'partial', 'paid', 'refunded'
+  
+  items         LaundryOrderItem[]
+  logistics     LaundryLogistics?
+  payments      LaundryPayment[]
+  
+  receivedAt    DateTime @default(now())
+  expectedDate  DateTime?
+  deliveredAt   DateTime?
+  
+  notes         String?  @db.Text
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([tenantId, orderNumber])
+  @@index([tenantId, customerId])
+}
+
+model LaundryOrderItem {
+  id          String   @id @default(cuid())
+  orderId     String
+  order       LaundryOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  serviceId   String
+  service     LaundryService @relation(fields: [serviceId], references: [id])
+  
+  quantity    Int      @default(1)
+  unitPrice   Float
+  subtotal    Float
+  garmentType String?  // 'Shirt', 'Suit', 'Blanket'
+  color       String?
+  brand       String?
+  specialInstructions String? @db.Text
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model LaundryLogistics {
+  id            String   @id @default(cuid())
+  orderId       String   @unique
+  order         LaundryOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  pickupScheduledAt  DateTime?
+  pickupCompletedAt   DateTime?
+  deliveryScheduledAt DateTime?
+  deliveryCompletedAt  DateTime?
+  
+  driverName    String?
+  vehicleId     String?
+  address       String   @db.Text
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model LaundryPayment {
+  id            String   @id @default(cuid())
+  orderId       String
+  order         LaundryOrder @relation(fields: [orderId], references: [id])
+
+  amount        Float
+  method        String   // 'cash', 'card', 'online', 'wallet'
+  transactionId String?
+  status        String   @default("completed")
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model LaundryTicket {
+  id          String   @id @default(cuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  
+  ticketId    String   // CS-001
+  customerId  String
+  customer    LaundryCustomer @relation(fields: [customerId], references: [id])
+  
+  orderId     String?
+  subject     String
+  message     String   @db.Text
+  priority    String   @default("medium")
+  status      String   @default("open")
+  type        String   @default("complaint") // 'complaint', 'feedback', 'inquiry'
+  resolution  String?  @db.Text
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([tenantId, ticketId])
+  @@index([tenantId, customerId])
+}
+
+model LaundrySupplier {
+  id            String   @id @default(cuid())
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  
+  name          String
+  contactPerson String?
+  phone         String?
+  email         String?
+  category      String   // 'Chemicals', 'Machinery', 'Packaging', 'Uniforms'
+  address       String?  @db.Text
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([tenantId])
+}
+
+model LaundryEquipment {
+  id            String   @id @default(cuid())
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+
+  name          String   // 'Washer Extractor 1', 'Dryer 2'
+  model         String?
+  serialNumber  String?
+  installationDate DateTime?
+  lastServiceDate DateTime?
+  nextServiceDate DateTime?
+  status        String   @default("operational") // 'operational', 'down', 'maintenance'
+  
+  repairs       LaundryRepair[]
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([tenantId])
+}
+
+model LaundryRepair {
+  id            String   @id @default(cuid())
+  equipmentId   String
+  equipment     LaundryEquipment @relation(fields: [equipmentId], references: [id])
+
+  description   String   @db.Text
+  cost          Float    @default(0)
+  technician    String?
+  repairDate    DateTime
+  status        String   @default("completed") // 'pending', 'in-progress', 'completed'
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ==========================================
+// SHARED UTILITY MODELS (Migrated)
+// ==========================================
 
 model Visitor {
-  id              Int       @id @default(autoincrement())
-  visitorPass     String    @unique
-  name            String
-  company         String?
-  purpose         String
-  category        String    @default("general")
-  personToVisit   String
-  department      String?
-  phone           String?
-  email           String?
-  idType          String?
-  idNumber        String?
-  photo           String?
-  vehicleNumber   String?
-  
-  checkIn         DateTime  @default(now())
-  checkOut        DateTime?
-  checkInBy       String?
-  checkOutBy      String?
-  status          String    @default("checked_in")
-  
-  notes           String?   @db.Text
-  createdAt       DateTime  @default(now())
-  
-  @@index([status])
-  @@index([checkIn])
-  @@map("visitors")
+  id            String   @id @default(cuid())
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  name          String
+  company       String?
+  purpose       String?  @db.Text
+  checkInTime   String?
+  checkOutTime  String?
+  status        String   @default("expected")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  @@index([tenantId])
 }
 
-model Software {
-  id              Int       @id @default(autoincrement())
-  name            String
-  vendor          String?
-  version         String?
-  category        String?
-  description     String?   @db.Text
-  isActive        Boolean   @default(true)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
-  licenses        SoftwareLicense[]
-  
-  @@map("software")
+model Meeting {
+  id            String   @id @default(cuid())
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  title         String
+  date          String
+  time          String
+  status        String   @default("scheduled")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  @@index([tenantId])
 }
 
-model SoftwareLicense {
-  id              Int       @id @default(autoincrement())
-  softwareId      Int
-  software        Software  @relation(fields: [softwareId], references: [id])
-  licenseKey      String?
-  licenseType     String
-  seatsTotal      Int       @default(1)
-  seatsUsed       Int       @default(0)
-  purchaseDate    DateTime?
-  purchasePrice   Decimal?  @db.Decimal(12, 2)
-  vendor          String?
-  invoiceNumber   String?
-  startDate       DateTime?
-  expiryDate      DateTime?
-  renewalDate     DateTime?
-  status          String    @default("active")
-  notes           String?   @db.Text
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
-  assetLicenses   AssetSoftwareLicense[]
-  
-  @@index([expiryDate])
-  @@index([status])
-  @@map("software_licenses")
+model License {
+  id            String   @id @default(cuid())
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  software      String
+  expiryDate    String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  @@index([tenantId])
 }
 
-model AssetSoftwareLicense {
-  id              Int       @id @default(autoincrement())
-  assetId         Int
-  asset           Asset     @relation(fields: [assetId], references: [id], onDelete: Cascade)
-  licenseId       Int
-  license         SoftwareLicense @relation(fields: [licenseId], references: [id], onDelete: Cascade)
-  installedAt     DateTime  @default(now())
-  installedBy     String?
-  notes           String?
-  
-  @@unique([assetId, licenseId])
-  @@map("asset_software_licenses")
+model Backup {
+  id            String   @id @default(cuid())
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  name          String
+  status        String   @default("success")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  @@index([tenantId])
+}
+
+model DailyCheck {
+  id            String   @id @default(cuid())
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  task          String
+  completed     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  @@index([tenantId])
+}
+
+model Credential {
+  id            String   @id @default(cuid())
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  system        String
+  username      String?
+  password      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  @@index([tenantId])
+}
+
+model QuickNote {
+  id            String   @id @default(cuid())
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  title         String
+  content       String?  @db.Text
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  @@index([tenantId])
+}
+
+model NotebookPage {
+  id            String   @id @default(cuid())
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  title         String
+  content       String?  @db.Text
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  @@index([tenantId])
+}
+
+model CalendarEvent {
+  id            String   @id @default(cuid())
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  title         String
+  date          String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  @@index([tenantId])
+}
+
+model KnowledgeArticle {
+  id            String   @id @default(cuid())
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  title         String
+  content       String?  @db.Text
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  @@index([tenantId])
+}
+
+model ActivityLog {
+  id            String   @id @default(cuid())
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  user          String
+  action        String
+  timestamp     DateTime @default(now())
+  @@index([tenantId])
 }
 
 model Announcement {
-  id              Int       @id @default(autoincrement())
-  title           String
-  content         String    @db.Text
-  category        String    @default("general")
-  priority        String    @default("normal")
-  authorName      String
-  authorId        Int?
-  isActive        Boolean   @default(true)
-  isPinned        Boolean   @default(false)
-  publishAt       DateTime?
-  expireAt        DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
-  @@index([isActive])
-  @@index([isPinned])
-  @@map("announcements")
+  id            String   @id @default(cuid())
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  title         String
+  content       String?  @db.Text
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  @@index([tenantId])
 }
 
-model Department {
-  id              Int       @id @default(autoincrement())
-  name            String    @unique
-  code            String?   @unique
-  description     String?
-  managerName     String?
-  location        String?
-  phone           String?
-  email           String?
-  isActive        Boolean   @default(true)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
-  @@map("departments")
+model BudgetItem {
+  id            String   @id @default(cuid())
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  category      String
+  amount        Float
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  @@index([tenantId])
+}
+
+model ProgrammeCharter {
+  id            String   @id @default(cuid())
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  name          String
+  status        String   @default("draft")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  @@index([tenantId])
+}
+
+model SystemAlert {
+  id            String   @id @default(cuid())
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  title         String
+  message       String?  @db.Text
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  @@index([tenantId])
 }
 
 model Setting {
-  id              Int       @id @default(autoincrement())
-  key             String    @unique
-  value           String    @db.Text
-  description     String?
-  category        String?
-  updatedAt       DateTime  @updatedAt
-  
-  @@map("settings")
+  id            String   @id @default(cuid())
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  key           String
+  value         String?  @db.Text
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  @@index([tenantId])
+  @@unique([tenantId, key])
 }
 
-model Event {
-  id              Int       @id @default(autoincrement())
-  title           String
-  description     String?   @db.Text
-  category        String    @default("general")
-  location        String?
-  startDate       DateTime
-  endDate         DateTime
-  isAllDay        Boolean   @default(false)
-  isRecurring     Boolean   @default(false)
-  recurrenceRule  String?
-  organizerId     Int?
-  organizerName   String?
-  status          String    @default("scheduled")
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
-  @@index([startDate])
-  @@index([category])
-  @@map("events")
-}
-
-model Report {
-  id              Int       @id @default(autoincrement())
-  name            String
-  type            String
-  description     String?   @db.Text
-  filters         String?   @db.Text
-  createdBy       String?
-  createdAt       DateTime  @default(now())
-  
-  @@map("reports")
-}
-
-model Vendor {
-  id              Int       @id @default(autoincrement())
-  name            String
-  category        String?
-  contactPerson   String?
-  email           String?
-  phone           String?
-  address         String?   @db.Text
-  website         String?
-  notes           String?   @db.Text
-  isActive        Boolean   @default(true)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
-  @@map("vendors")
+model ServerMonitor {
+  id            String   @id @default(cuid())
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  name          String
+  ip            String
+  status        String   @default("online")
+  updatedAt     DateTime @updatedAt
+  @@index([tenantId])
 }
