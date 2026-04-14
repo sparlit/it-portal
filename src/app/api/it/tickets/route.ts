@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { withTenant } from '@/lib/api-middleware';
-import { randomBytes } from 'crypto';
 
 function generateTicketNumber(): string {
   const date = new Date();
-  // Use high-entropy suffix with crypto-random 8-character hex string
-  const randomSuffix = randomBytes(4).toString('hex').toUpperCase();
-  return `TKT-IT-${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}-${randomSuffix}`;
+  return `TKT-IT-${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
 }
 
 export async function GET(request: NextRequest) {
@@ -37,43 +34,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Retry logic for unique constraint violations
-    const maxRetries = 5;
-    let lastError: any = null;
-
-    for (let attempt = 0; attempt < maxRetries; attempt++) {
-      try {
-        const ticket = await prisma.iTTicket.create({
-          data: {
-            tenantId,
-            ticketId: generateTicketNumber(),
-            title: body.title,
-            description: body.description,
-            priority: body.priority || 'medium',
-            category: body.category,
-            requester: body.requester,
-            assignedTo: body.assignedTo,
-            slaDeadline: body.slaDeadline
-          }
-        });
-
-        return NextResponse.json(ticket, { status: 201 });
-      } catch (error: any) {
-        // Check for unique constraint violation on tenantId+ticketId
-        if (error.code === 'P2002' && error.meta?.target?.includes('ticketId')) {
-          lastError = error;
-          // Retry with a new ticketId
-          continue;
-        }
-        // Different error, throw immediately
-        throw error;
+    const ticket = await prisma.iTTicket.create({
+      data: {
+        tenantId,
+        ticketId: generateTicketNumber(),
+        title: body.title,
+        description: body.description,
+        priority: body.priority || 'medium',
+        category: body.category,
+        requester: body.requester,
+        assignedTo: body.assignedTo,
+        slaDeadline: body.slaDeadline
       }
-    }
+    });
 
-    // All retries exhausted
-    return NextResponse.json(
-      { error: 'Failed to generate unique ticket ID after multiple attempts' },
-      { status: 500 }
-    );
+    return NextResponse.json(ticket, { status: 201 });
   });
 }

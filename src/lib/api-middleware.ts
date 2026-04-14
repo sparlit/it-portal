@@ -1,28 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSession } from './auth';
+import { decrypt } from './auth';
 
 export async function withTenant(req: NextRequest, handler: Function) {
-  // Get authenticated session
-  const session = await getSession();
+  // Try to get tenant from session first (Production Standard)
+  const sessionToken = req.cookies.get('session')?.value;
+  let tenantId = null;
 
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (sessionToken) {
+    try {
+      const payload = await decrypt(sessionToken);
+      tenantId = payload?.user?.tenantId;
+    } catch (e) {
+      // Invalid session, continue to check header (for API keys/dev)
+    }
   }
 
-  // Extract tenant ID from the authenticated session
-  const tenantId = session.tenantId;
+  // Fallback to header for development or cross-tenant API support
+  if (!tenantId) {
+    tenantId = req.headers.get('x-tenant-id');
+  }
 
   if (!tenantId) {
-    return NextResponse.json({ error: 'Missing tenant in session' }, { status: 403 });
-  }
-
-  // Optional: verify header matches session if header is provided
-  const headerTenantId = req.headers.get('x-tenant-id');
-  if (headerTenantId && headerTenantId !== tenantId) {
-    return NextResponse.json(
-      { error: 'Tenant mismatch: header does not match authenticated session' },
-      { status: 403 }
-    );
+    return NextResponse.json({ error: 'Unauthorized: Missing Tenant Context' }, { status: 401 });
   }
 
   return handler(tenantId);

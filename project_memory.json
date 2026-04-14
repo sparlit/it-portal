@@ -1,7 +1,7 @@
 {
   "version": "1.1.0",
   "project_name": "TSysLab Industrial-Grade IT & Laundry Ecosystem",
-  "architecture": "Multi-tenant Modular Monolith (Next.js 14, Prisma, PostgreSQL)",
+  "architecture": "Multi-tenant Modular Monolith (Next.js 14, Prisma, PostgreSQL/SQLite)",
   "modules": {
     "core": {
       "status": "active",
@@ -36,8 +36,8 @@
   ],
   "debt": [
     {
-      "issue": "Legacy SQLite to PostgreSQL migration",
-      "severity": "high"
+      "issue": "Production PostgreSQL migration (Currently SQLite for dev/PoC)",
+      "severity": "medium"
     }
   ],
   "last_action": "2024-05-20T12:00:00Z"

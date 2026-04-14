@@ -6,18 +6,6 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Plus, MessageSquare, AlertCircle, CheckCircle } from 'lucide-react'
 
-// Helper to get tenant from session/auth context
-// This should be replaced with your actual auth context/hook
-async function getTenantFromSession(): Promise<string | null> {
-  try {
-    const response = await fetch('/api/auth/session');
-    const session = await response.json();
-    return session?.tenantId || null;
-  } catch {
-    return null;
-  }
-}
-
 interface LaundryTicket {
   id: string;
   ticketId: string;
@@ -38,18 +26,7 @@ export function LaundryTicketDashboard() {
   useEffect(() => {
     async function fetchTickets() {
       try {
-        // Get tenant from authenticated session
-        const tenantId = await getTenantFromSession();
-
-        if (!tenantId) {
-          console.error('No tenant ID found in session');
-          setLoading(false);
-          return;
-        }
-
-        const response = await fetch('/api/laundry/tickets', {
-          headers: { 'x-tenant-id': tenantId }
-        })
+        const response = await fetch('/api/laundry/tickets')
         const data = await response.json()
         if (Array.isArray(data)) {
           setTickets(data)

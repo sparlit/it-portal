@@ -2,48 +2,24 @@ import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
-// Validate JWT_SECRET - fail fast in production, warn in development
-const getSecretKey = (): string => {
-  const jwtSecret = process.env.JWT_SECRET;
-  const nodeEnv = process.env.NODE_ENV;
+const secretKey = process.env.JWT_SECRET;
 
-  if (!jwtSecret) {
-    if (nodeEnv === 'production') {
-      console.error('FATAL: JWT_SECRET is not set in production environment');
-      throw new Error('JWT_SECRET must be set in production');
-    } else {
-      console.warn(
-        'WARNING: JWT_SECRET is not set. Using fallback for development only. ' +
-        'This is INSECURE and must not be used in production!'
-      );
-      return 'fallback-secret-key-for-dev-only';
-    }
-  }
+if (!secretKey && process.env.NODE_ENV === 'production') {
+  throw new Error('CRITICAL: JWT_SECRET environment variable is missing in production.');
+}
 
-  return jwtSecret;
-};
-
-let cachedSecretKey: string | null = null;
-let cachedKey: Uint8Array | null = null;
-
-const getKey = (): Uint8Array => {
-  if (!cachedKey) {
-    cachedSecretKey = getSecretKey();
-    cachedKey = new TextEncoder().encode(cachedSecretKey);
-  }
-  return cachedKey;
-};
+const key = new TextEncoder().encode(secretKey || 'fallback-secret-key-for-dev-only');
 
 export async function encrypt(payload: any) {
   return await new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime('24h')
-    .sign(getKey());
+    .sign(key);
 }
 
 export async function decrypt(input: string): Promise<any> {
-  const { payload } = await jwtVerify(input, getKey(), {
+  const { payload } = await jwtVerify(input, key, {
     algorithms: ['HS256'],
   });
   return payload;
