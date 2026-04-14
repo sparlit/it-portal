@@ -1,43 +1,47 @@
 {
   "hero": {
-    "title": "Industrial Excellence in Every Thread",
-    "subtitle": "Al Rayes Laundry & Dry Cleaning: Qatar's Premier Multi-Tenant IT & Laundry Operational Ecosystem.",
-    "cta": "Access the Terminal"
+    "title": "Industrial Excellence. Precision Care.",
+    "subtitle": "Al Rayes Laundry & Dry Cleaning: Qatar's premier multi-tenant operational ecosystem powered by TSysLab.",
+    "image": "/assets/hero-industrial.svg"
   },
   "portals": [
     {
-      "id": "it",
-      "title": "IT Operations Hub",
-      "description": "Manage infrastructure, assets, and support tickets for regional laundry nodes.",
-      "features": ["Uptime Monitoring", "Encrypted Secret Vault", "Hardware Inventory"],
-      "link": "/portal/it"
+      "name": "IT Operations Hub",
+      "icon": "Cpu",
+      "link": "/portal/it",
+      "description": "Manage regional infrastructure, track assets, and resolve technical tickets with high-density monitoring."
     },
     {
-      "id": "laundry",
-      "title": "Laundry Management System",
-      "description": "Full lifecycle order tracking, customer CRM, and logistics management.",
-      "features": ["Real-time Order Status", "Driver Logistics Dashboard", "Dynamic Pricing"],
-      "link": "/portal/laundry"
+      "name": "Laundry Management System",
+      "icon": "Waves",
+      "link": "/portal/laundry",
+      "description": "Full lifecycle order tracking, customer CRM, and real-time logistics for the modern cleaning enterprise."
     }
   ],
   "features": [
     {
       "title": "Multi-Tenant Security",
-      "description": "Industrial-grade isolation for complex enterprise hierarchies."
+      "description": "Zero-leakage data isolation with granular role-based access control for complex organizational hierarchies."
     },
     {
       "title": "Mobile-First Logistics",
-      "description": "Native-speed driver dashboards for real-time delivery accuracy."
+      "description": "Optimized driver dashboards for real-time pickup and delivery accuracy in the Doha metropolitan area."
     },
     {
-      "title": "Global Analytics",
-      "description": "Real-time Takt time and SLA compliance monitoring."
+      "title": "Operational Intelligence",
+      "description": "Real-time Takt time monitoring and SLA compliance metrics to drive industrial efficiency."
     }
   ],
   "testimonials": [
     {
-      "quote": "The Al Rayes ecosystem transformed our operational visibility in Doha.",
-      "author": "Operations Director"
+      "quote": "The Al Rayes ecosystem transformed our operational visibility and customer trust overnight.",
+      "author": "Operations Director",
+      "image": "/assets/avatar-1.png"
     }
-  ]
+  ],
+  "contact": {
+    "email": "support@alrayeslaundry.com",
+    "phone": "+974 4444 0000",
+    "address": "Industrial Area, Doha, Qatar"
+  }
 }
