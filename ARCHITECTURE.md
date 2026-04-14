@@ -19,6 +19,13 @@ TSysLab is an industrial-grade, multi-tenant ecosystem designed to manage IT Inf
 | **Opportunities** | **Threats** |
 | Mobile driver app and RFID garment tagging integration. | Operational garment misidentification without strict tagging. |
 
+### Landing Page Module
+| **Strengths** | **Weaknesses** |
+| :--- | :--- |
+| Innovative, data-driven entry point; multi-portal gateway. | Dependency on 'landing_content.json' structure. |
+| **Opportunities** | **Threats** |
+| SEO optimization and direct public customer ordering. | Branding fragmentation if portals diverge too much. |
+
 ## 3. Tool Choice Comparison
 
 ### Core Framework: Next.js vs. FastAPI
@@ -29,6 +36,10 @@ TSysLab is an industrial-grade, multi-tenant ecosystem designed to manage IT Inf
 - **TypeORM**: Flexible but requires extensive manual class definitions.
 - **Prisma (Chosen)**: Auto-generates types from a single schema file. Superior DX and type-safety, ensuring the "Elite Architect" standard for zero-bug database interactions. **Decision: Prisma.**
 - **Note on Engines**: **SQLite** is utilized for development, local testing, and Proof-of-Concept (PoC) stages to ensure rapid iteration. **PostgreSQL** is the mandatory target for all production and industrial-grade deployments to support high concurrency and advanced features.
+
+### Frontend Strategy: Next.js vs. SvelteKit
+- **SvelteKit**: Extremely fast and lightweight; excellent for simple landing pages.
+- **Next.js (Chosen)**: While SvelteKit is impressive, Next.js provides the robust "App Router" architecture which is superior for complex, multi-tenant "Portals" within a single project. The synergy between Server Components for security and Client Components for interactivity makes it the industrial choice. **Decision: Next.js.**
 
 ## 4. Multi-tenancy Model
 We use a **Shared Database / Shared Schema** model. Logical isolation is enforced via `tenantId` on every model.

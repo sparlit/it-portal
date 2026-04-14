@@ -1,0 +1,43 @@
+{
+  "hero": {
+    "title": "Industrial Excellence in Every Thread",
+    "subtitle": "Al Rayes Laundry & Dry Cleaning: Qatar's Premier Multi-Tenant IT & Laundry Operational Ecosystem.",
+    "cta": "Access the Terminal"
+  },
+  "portals": [
+    {
+      "id": "it",
+      "title": "IT Operations Hub",
+      "description": "Manage infrastructure, assets, and support tickets for regional laundry nodes.",
+      "features": ["Uptime Monitoring", "Encrypted Secret Vault", "Hardware Inventory"],
+      "link": "/portal/it"
+    },
+    {
+      "id": "laundry",
+      "title": "Laundry Management System",
+      "description": "Full lifecycle order tracking, customer CRM, and logistics management.",
+      "features": ["Real-time Order Status", "Driver Logistics Dashboard", "Dynamic Pricing"],
+      "link": "/portal/laundry"
+    }
+  ],
+  "features": [
+    {
+      "title": "Multi-Tenant Security",
+      "description": "Industrial-grade isolation for complex enterprise hierarchies."
+    },
+    {
+      "title": "Mobile-First Logistics",
+      "description": "Native-speed driver dashboards for real-time delivery accuracy."
+    },
+    {
+      "title": "Global Analytics",
+      "description": "Real-time Takt time and SLA compliance monitoring."
+    }
+  ],
+  "testimonials": [
+    {
+      "quote": "The Al Rayes ecosystem transformed our operational visibility in Doha.",
+      "author": "Operations Director"
+    }
+  ]
+}
