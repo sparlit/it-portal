@@ -1,4 +1,6 @@
 import { ITTicketDashboard } from '@/components/modules/it/ITTicketDashboard'
+import { AssetInventory } from '@/components/modules/it/AssetInventory'
+import { GlobalMetrics } from '@/components/modules/core/GlobalMetrics'
 import { LaundryTicketDashboard } from '@/components/modules/laundry/LaundryTicketDashboard'
 import { LaundryOrderManager } from '@/components/modules/laundry/LaundryOrderManager'
 import { LaundryCustomerManager } from '@/components/modules/laundry/LaundryCustomerManager'
@@ -22,12 +24,18 @@ export default function Home() {
         </header>
 
         <Tabs defaultValue="laundry-orders" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-8">
+          <TabsList className="grid w-full grid-cols-6 mb-8">
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="laundry-orders">Orders</TabsTrigger>
             <TabsTrigger value="laundry-crm">Customers</TabsTrigger>
             <TabsTrigger value="laundry-cs">Customer Service</TabsTrigger>
-            <TabsTrigger value="it">IT Support</TabsTrigger>
+            <TabsTrigger value="it-assets">IT Assets</TabsTrigger>
+            <TabsTrigger value="it-tickets">IT Support</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="analytics">
+            <GlobalMetrics />
+          </TabsContent>
 
           <TabsContent value="laundry-orders">
             <LaundryOrderManager />
@@ -41,7 +49,11 @@ export default function Home() {
             <LaundryTicketDashboard />
           </TabsContent>
 
-          <TabsContent value="it">
+          <TabsContent value="it-assets">
+            <AssetInventory />
+          </TabsContent>
+
+          <TabsContent value="it-tickets">
             <ITTicketDashboard />
           </TabsContent>
         </Tabs>
