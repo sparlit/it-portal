@@ -1,105 +1,160 @@
 "use client"
 
-import { ITTicketDashboard } from '@/components/modules/it/ITTicketDashboard'
-import { AssetInventory } from '@/components/modules/it/AssetInventory'
-import { InfrastructureMonitor } from '@/components/modules/it/InfrastructureMonitor'
-import { SecretVault } from '@/components/modules/it/SecretVault'
-import { GlobalMetrics } from '@/components/modules/core/GlobalMetrics'
-import { ReceptionDesk } from '@/components/modules/core/ReceptionDesk'
-import { AuditTrail } from '@/components/modules/core/AuditTrail'
-import { LaundryTicketDashboard } from '@/components/modules/laundry/LaundryTicketDashboard'
-import { LaundryOrderManager } from '@/components/modules/laundry/LaundryOrderManager'
-import { LaundryCustomerManager } from '@/components/modules/laundry/LaundryCustomerManager'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import React from 'react'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { useI18n } from '@/lib/i18n/context'
-import { Globe } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import {
+  Truck,
+  Settings,
+  ShieldCheck,
+  Globe,
+  Cpu,
+  Waves,
+  ChevronRight,
+  Activity,
+  Lock,
+  Zap
+} from 'lucide-react'
+import landingContent from '@/lib/landing_content.json'
 
-export default function Home() {
-  const { t, language, setLanguage } = useI18n();
+export default function LandingPage() {
+  const { t, language, setLanguage } = useI18n()
 
   return (
-    <main className="container mx-auto p-4 md:p-8">
-      <div className="flex flex-col gap-8">
-        <header className="border-b pb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h1 className="text-4xl font-extrabold tracking-tight">{t('title')}</h1>
-            <p className="text-xl text-muted-foreground mt-2">{t('subtitle')}</p>
+    <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-blue-100">
+      {/* Navigation */}
+      <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="bg-blue-600 p-1.5 rounded-lg">
+              <ShieldCheck className="h-6 w-6 text-white" />
+            </div>
+            <span className="text-xl font-black tracking-tighter uppercase">Al Rayes</span>
           </div>
-          <div className="flex gap-4 items-center">
+
+          <div className="flex items-center gap-4">
             <Button
               variant="ghost"
               size="sm"
-              className="flex items-center gap-2 font-bold"
+              className="font-bold flex items-center gap-2"
               onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
             >
               <Globe className="h-4 w-4" />
               {language === 'en' ? 'العربية' : 'English'}
             </Button>
-            <Badge variant="outline" className="text-xs uppercase tracking-wider px-3 py-1 bg-blue-50 text-blue-700 border-blue-200">
-              ENTERPRISE V1.2
-            </Badge>
+            <Link href="/login">
+              <Button className="bg-slate-900 font-bold px-6">Login</Button>
+            </Link>
           </div>
-        </header>
+        </div>
+      </nav>
 
-        <Tabs defaultValue="analytics" className="w-full">
-          <div className="overflow-x-auto pb-4 scrollbar-hide">
-            <TabsList className="flex h-auto gap-2 bg-transparent p-0 min-w-max">
-              <TabsTrigger value="analytics" className="data-[state=active]:bg-slate-900 data-[state=active]:text-white border font-bold">{t('analytics')}</TabsTrigger>
-              <TabsTrigger value="reception" className="border font-bold">{t('reception')}</TabsTrigger>
-              <TabsTrigger value="audit" className="border font-bold">{t('audit')}</TabsTrigger>
-              <TabsTrigger value="laundry-orders" className="border font-bold">{t('orders')}</TabsTrigger>
-              <TabsTrigger value="laundry-crm" className="border font-bold">{t('customers')}</TabsTrigger>
-              <TabsTrigger value="laundry-cs" className="border font-bold">{t('laundry_cs')}</TabsTrigger>
-              <TabsTrigger value="it-assets" className="border font-bold">{t('it_assets')}</TabsTrigger>
-              <TabsTrigger value="it-infra" className="border font-bold">{t('it_infra')}</TabsTrigger>
-              <TabsTrigger value="it-tickets" className="border font-bold">{t('it_support')}</TabsTrigger>
-              <TabsTrigger value="it-vault" className="border font-bold">{t('it_vault')}</TabsTrigger>
-            </TabsList>
+      {/* Hero Section */}
+      <section className="pt-32 pb-20 bg-slate-50">
+        <div className="container mx-auto px-4 text-center max-w-4xl">
+          <Badge variant="outline" className="mb-6 px-4 py-1.5 rounded-full bg-blue-50 text-blue-700 border-blue-200 font-bold animate-fade-in">
+            {language === 'en' ? 'INDUSTRIAL STACK V1.3' : 'المنظومة الصناعية الإصدار 1.3'}
+          </Badge>
+          <h1 className="text-5xl md:text-7xl font-black tracking-tighter leading-tight mb-6 bg-clip-text text-transparent bg-gradient-to-br from-slate-900 to-slate-600">
+            {landingContent.hero.title}
+          </h1>
+          <p className="text-xl text-slate-600 mb-10 leading-relaxed font-medium">
+            {landingContent.hero.subtitle}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/portal/laundry">
+              <Button className="h-14 px-8 bg-blue-600 hover:bg-blue-700 text-lg font-bold w-full sm:w-auto shadow-lg shadow-blue-200">
+                {language === 'en' ? 'Laundry Operations' : 'عمليات المغاسل'} <ChevronRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+            <Link href="/portal/it">
+              <Button variant="outline" className="h-14 px-8 text-lg font-bold w-full sm:w-auto border-slate-300">
+                {language === 'en' ? 'IT Infrastructure' : 'البنية التحتية'}
+              </Button>
+            </Link>
           </div>
+        </div>
+      </section>
 
-          <TabsContent value="analytics">
-            <GlobalMetrics />
-          </TabsContent>
+      {/* Portal Gateway Cards */}
+      <section className="py-20 container mx-auto px-4">
+        <div className="grid md:grid-cols-2 gap-8">
+          {landingContent.portals.map((portal) => (
+            <Card key={portal.id} className="group overflow-hidden border-slate-200 hover:border-blue-500 transition-all shadow-xl hover:shadow-2xl">
+              <CardHeader className="bg-slate-50 border-b group-hover:bg-blue-50 transition-colors py-8 px-8">
+                <div className="flex justify-between items-start mb-6">
+                  <div className={`p-4 rounded-2xl ${portal.id === 'it' ? 'bg-slate-900 text-white' : 'bg-blue-600 text-white'} shadow-lg`}>
+                    {portal.id === 'it' ? <Cpu className="h-8 w-8" /> : <Waves className="h-8 w-8" />}
+                  </div>
+                  <Badge variant="secondary" className="font-bold">Module Active</Badge>
+                </div>
+                <CardTitle className="text-3xl font-black tracking-tight">{portal.title}</CardTitle>
+                <CardDescription className="text-lg font-medium mt-2">{portal.description}</CardDescription>
+              </CardHeader>
+              <CardContent className="p-8">
+                <div className="space-y-4 mb-8">
+                  {portal.features.map((feature, idx) => (
+                    <div key={idx} className="flex items-center gap-3 font-bold text-slate-700">
+                      <Zap className="h-5 w-5 text-blue-500" /> {feature}
+                    </div>
+                  ))}
+                </div>
+                <Link href={portal.link}>
+                  <Button className="w-full h-12 font-bold group-hover:bg-blue-600 group-hover:text-white transition-all">
+                    Enter Portal
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
 
-          <TabsContent value="reception">
-            <ReceptionDesk />
-          </TabsContent>
+      {/* Feature Grid */}
+      <section className="py-20 bg-slate-900 text-white">
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-3 gap-12 text-center">
+            {landingContent.features.map((feature, idx) => (
+              <div key={idx} className="space-y-4">
+                <div className="mx-auto w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-blue-500/20">
+                  {idx === 0 ? <Lock className="h-6 w-6" /> : idx === 1 ? <Truck className="h-6 w-6" /> : <Activity className="h-6 w-6" />}
+                </div>
+                <h3 className="text-2xl font-bold">{feature.title}</h3>
+                <p className="text-slate-400 font-medium leading-relaxed">{feature.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-          <TabsContent value="audit">
-            <AuditTrail />
-          </TabsContent>
+      {/* Testimonial */}
+      <section className="py-20 container mx-auto px-4 text-center">
+        <div className="max-w-2xl mx-auto italic text-2xl font-medium text-slate-700">
+          "{landingContent.testimonials[0].quote}"
+        </div>
+        <div className="mt-4 font-black uppercase tracking-widest text-blue-600">
+          - {landingContent.testimonials[0].author}
+        </div>
+      </section>
 
-          <TabsContent value="laundry-orders">
-            <LaundryOrderManager />
-          </TabsContent>
-
-          <TabsContent value="laundry-crm">
-            <LaundryCustomerManager />
-          </TabsContent>
-
-          <TabsContent value="laundry-cs">
-            <LaundryTicketDashboard />
-          </TabsContent>
-
-          <TabsContent value="it-assets">
-            <AssetInventory />
-          </TabsContent>
-
-          <TabsContent value="it-infra">
-            <InfrastructureMonitor />
-          </TabsContent>
-
-          <TabsContent value="it-tickets">
-            <ITTicketDashboard />
-          </TabsContent>
-
-          <TabsContent value="it-vault">
-            <SecretVault />
-          </TabsContent>
-        </Tabs>
-      </div>
-    </main>
+      {/* Footer */}
+      <footer className="py-12 border-t bg-slate-50">
+        <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="h-5 w-5 text-blue-600" />
+            <span className="font-bold">TSysLab Industrial Stack</span>
+          </div>
+          <p className="text-slate-500 text-sm font-bold">© 2024 Al Rayes Laundry & Dry Cleaning. All rights reserved.</p>
+          <div className="flex gap-6">
+            <Link href="#" className="text-sm font-bold hover:text-blue-600">Status</Link>
+            <Link href="#" className="text-sm font-bold hover:text-blue-600">Legal</Link>
+            <Link href="#" className="text-sm font-bold hover:text-blue-600">Contact</Link>
+          </div>
+        </div>
+      </footer>
+    </div>
   )
 }

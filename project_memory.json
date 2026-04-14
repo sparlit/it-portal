@@ -1,52 +1,40 @@
 {
-  "version": "1.2.0",
+  "version": "1.3.0",
   "project_name": "TSysLab Industrial-Grade IT & Laundry Ecosystem",
-  "architecture": "Multi-tenant Modular Monolith (Next.js 14, Prisma, PostgreSQL/SQLite)",
+  "architecture": "Multi-tenant Modular Monolith with Unified Landing Page",
   "modules": {
     "core": {
       "status": "active",
-      "description": "Shared authentication (JWT), Granular RBAC, Reception Management, and i18n framework.",
-      "metrics": ["Latency < 100ms", "Zero unauthorized access", "RBAC coverage 100%"]
+      "description": "Shared authentication (JWT), RBAC, Reception, and i18n framework.",
+      "metrics": ["Latency < 100ms", "RBAC coverage 100%"]
     },
-    "it_management": {
+    "landing_page": {
+      "status": "initializing",
+      "description": "Innovative, modern face of Al Rayes Laundry & Dry Cleaning; gateways to IT and Laundry portals.",
+      "metrics": ["LCP < 2.5s", "CLS < 0.25", "WCAG 2.1 AA Compliance"]
+    },
+    "it_portal": {
       "status": "active",
       "description": "IT Assets, Infrastructure Monitor, Secret Vault, and IT Ticketing.",
-      "metrics": ["99.98% uptime tracking", "MTTR tracking", "Credential access auditing"]
+      "metrics": ["99.98% uptime tracking"]
     },
-    "laundry_management": {
+    "laundry_portal": {
       "status": "active",
-      "description": "End-to-end laundry operations: Order lifecycle, Mobile Logistics/Driver Dashboard, CRM, and Pricing Catalog.",
-      "metrics": ["Laundry Takt Time tracking", "Logistics route accuracy"]
-    },
-    "analytics_system": {
-      "status": "deployed",
-      "description": "Industrial KPI dashboard monitoring global operational health.",
-      "metrics": ["SLA compliance", "Daily throughput metrics"]
+      "description": "End-to-end laundry operations: Order lifecycle, Driver Dashboard, CRM, and Pricing.",
+      "metrics": ["Laundry Takt Time tracking"]
     }
   },
   "migrations": [
     {
-      "id": "20240520_init_memory",
-      "description": "Initialized project memory and protocol baseline."
-    },
-    {
-      "id": "20240520_auth_and_ui",
-      "description": "Implemented JWT auth, multi-tenant middleware, and modular ticket dashboards."
-    },
-    {
-      "id": "20240520_industrial_expansion",
-      "description": "Deployed RBAC, Infrastructure Monitoring, Secret Vault, Driver Dashboard, and Global Metrics."
+      "id": "20240520_landing_page_rebuild",
+      "description": "Reconfiguring architecture for landing-page-driven entry points and unified portal gateways."
     }
   ],
   "debt": [
     {
-      "issue": "Production PostgreSQL migration (Currently SQLite for dev/PoC)",
+      "issue": "Production PostgreSQL migration",
       "severity": "medium"
-    },
-    {
-      "issue": "Full i18n translation coverage (Framework implemented)",
-      "severity": "low"
     }
   ],
-  "last_action": "2024-05-20T18:00:00Z"
+  "last_action": "2024-05-20T20:00:00Z"
 }
