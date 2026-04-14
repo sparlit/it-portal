@@ -2,8 +2,13 @@ import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
-const secretKey = process.env.JWT_SECRET || 'fallback-secret-key-for-dev-only';
-const key = new TextEncoder().encode(secretKey);
+const secretKey = process.env.JWT_SECRET;
+
+if (!secretKey && process.env.NODE_ENV === 'production') {
+  throw new Error('CRITICAL: JWT_SECRET environment variable is missing in production.');
+}
+
+const key = new TextEncoder().encode(secretKey || 'fallback-secret-key-for-dev-only');
 
 export async function encrypt(payload: any) {
   return await new SignJWT(payload)

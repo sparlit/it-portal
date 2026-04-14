@@ -26,9 +26,7 @@ export function LaundryTicketDashboard() {
   useEffect(() => {
     async function fetchTickets() {
       try {
-        const response = await fetch('/api/laundry/tickets', {
-          headers: { 'x-tenant-id': 'default-tenant' }
-        })
+        const response = await fetch('/api/laundry/tickets')
         const data = await response.json()
         if (Array.isArray(data)) {
           setTickets(data)

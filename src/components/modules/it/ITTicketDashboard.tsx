@@ -22,9 +22,7 @@ export function ITTicketDashboard() {
   useEffect(() => {
     async function fetchTickets() {
       try {
-        const response = await fetch('/api/it/tickets', {
-          headers: { 'x-tenant-id': 'default-tenant' }
-        })
+        const response = await fetch('/api/it/tickets')
         const data = await response.json()
         if (Array.isArray(data)) {
           setTickets(data)
