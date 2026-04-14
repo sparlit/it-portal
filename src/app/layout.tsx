@@ -8,6 +8,12 @@ export const metadata = {
   description: 'Industrial-Grade IT & Laundry Management',
 }
 
+/**
+ * Root HTML layout that applies the Inter font and renders the application content.
+ *
+ * @param children - Content to be rendered inside the document body
+ * @returns A React element representing the `<html>` document with `children` placed inside the `<body>`
+ */
 export default function RootLayout({
   children,
 }: {

@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { withTenant } from '@/lib/api-middleware';
 
+/**
+ * Retrieve a laundry ticket by ID for the current tenant, including its related customer.
+ *
+ * @returns The ticket object (including `customer`) if found; otherwise an error JSON `{ error: 'Ticket not found' }` with HTTP 404.
+ */
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -25,6 +30,14 @@ export async function GET(
   });
 }
 
+/**
+ * Update specified fields of a laundry ticket belonging to the current tenant.
+ *
+ * The request body may include any of: `subject`, `message`, `status`, `priority`, `type`, and `resolution`.
+ *
+ * @param params.id - The ID of the ticket to update
+ * @returns The updated laundry ticket object if the update succeeded; otherwise an error object `{ error: 'Ticket not found' }` with HTTP 404 status when no matching ticket exists.
+ */
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -59,6 +72,12 @@ export async function PUT(
   });
 }
 
+/**
+ * Delete the laundry ticket specified by the route `id` within the current tenant.
+ *
+ * @param params - Route parameters containing `id`, the ticket identifier to delete
+ * @returns `NextResponse` with status 404 and `{ error: 'Ticket not found' }` if no matching ticket exists for the tenant, otherwise status 200 with `{ message: 'Ticket deleted successfully' }`
+ */
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }

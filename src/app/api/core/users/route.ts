@@ -3,6 +3,13 @@ import { prisma } from '@/lib/db';
 import { withTenant } from '@/lib/api-middleware';
 import bcrypt from 'bcryptjs';
 
+/**
+ * Fetches all users belonging to the current tenant.
+ *
+ * Returns each user with the fields: `id`, `username`, `name`, `email`, `role`, `status`, and `createdAt`.
+ *
+ * @returns An array of user objects containing `id`, `username`, `name`, `email`, `role`, `status`, and `createdAt`
+ */
 export async function GET(request: NextRequest) {
   return withTenant(request, async (tenantId: string) => {
     const users = await prisma.user.findMany({
@@ -21,6 +28,11 @@ export async function GET(request: NextRequest) {
   });
 }
 
+/**
+ * Create a new user for the current tenant and return the created user without the `password` field.
+ *
+ * @returns A NextResponse containing the created user object without the `password` field and status 201, or a JSON error `{ error: 'Missing required fields' }` with status 400 when `username`, `password`, or `name` are missing.
+ */
 export async function POST(request: NextRequest) {
   return withTenant(request, async (tenantId: string) => {
     const body = await request.json();

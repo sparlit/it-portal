@@ -3,6 +3,16 @@ import { prisma } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import { encrypt } from '@/lib/auth';
 
+/**
+ * Handle a login request: authenticate credentials, create an encrypted session cookie, and return the authenticated user's public fields.
+ *
+ * @param request - NextRequest whose JSON body must include `username` and `password`
+ * @returns A NextResponse:
+ *  - 200 with `{ user: { id, username, name, role, tenantId } }` and an HTTP-only `session` cookie on successful authentication
+ *  - 400 with `{ error: 'Username and password are required' }` when `username` or `password` is missing
+ *  - 401 with `{ error: 'Invalid credentials' }` when authentication fails
+ *  - 500 with `{ error: 'Internal server error' }` on unexpected errors
+ */
 export async function POST(request: NextRequest) {
   try {
     const { username, password } = await request.json();

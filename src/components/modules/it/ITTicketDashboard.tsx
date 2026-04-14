@@ -15,6 +15,15 @@ interface ITTicket {
   status: string;
 }
 
+/**
+ * Renders an IT support ticket dashboard showing summary metrics and a recent tickets list.
+ *
+ * Fetches ticket data from `/api/it/tickets` on mount (request includes header `x-tenant-id: 'default-tenant'`),
+ * displays a loading state, an empty state if no tickets are returned, and otherwise shows total, open, and
+ * resolved counts plus a list of recent tickets with priority and status badges.
+ *
+ * @returns The dashboard UI as JSX containing summary cards and the "Recent Tickets" section.
+ */
 export function ITTicketDashboard() {
   const [tickets, setTickets] = useState<ITTicket[]>([])
   const [loading, setLoading] = useState(true)

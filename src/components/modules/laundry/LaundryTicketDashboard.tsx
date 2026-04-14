@@ -19,6 +19,17 @@ interface LaundryTicket {
   };
 }
 
+/**
+ * Renders the Laundry Customer Service dashboard with summary cards and a ticket list.
+ *
+ * The component performs an initial data load on mount (requests /api/laundry/tickets with a
+ * tenant header) and maintains local `tickets` and `loading` state. While loading it shows a
+ * loading message, when no tickets are present it shows an empty-state message, and otherwise
+ * displays counts (active, pending complaints, resolved) and a list of ticket summaries with
+ * priority and status badges.
+ *
+ * @returns The dashboard's rendered JSX element
+ */
 export function LaundryTicketDashboard() {
   const [tickets, setTickets] = useState<LaundryTicket[]>([])
   const [loading, setLoading] = useState(true)
