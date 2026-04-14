@@ -133,7 +133,7 @@ model LaundryCustomer {
   id          String   @id @default(cuid())
   tenantId    String
   tenant      Tenant   @relation(fields: [tenantId], references: [id])
-  
+
   name        String
   email       String?
   phone       String
@@ -141,13 +141,14 @@ model LaundryCustomer {
   loyaltyTier String   @default("standard")
   totalOrders Int      @default(0)
   notes       String?  @db.Text
-  
+
   orders      LaundryOrder[]
   tickets     LaundryTicket[]
-  
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  @@unique([tenantId, id])
   @@index([tenantId, phone])
 }
 
@@ -174,39 +175,41 @@ model LaundryOrder {
   id            String   @id @default(cuid())
   tenantId      String
   tenant        Tenant   @relation(fields: [tenantId], references: [id])
-  
+
   orderNumber   String   // LND-001
   customerId    String
-  customer      LaundryCustomer @relation(fields: [customerId], references: [id])
-  
+  customer      LaundryCustomer @relation(fields: [tenantId, customerId], references: [tenantId, id])
+
   status        String   @default("received") // 'received', 'sorting', 'processing', 'quality-check', 'ready', 'out-for-delivery', 'delivered', 'cancelled'
   totalAmount   Float    @default(0)
   paymentStatus String   @default("pending") // 'pending', 'partial', 'paid', 'refunded'
-  
+
   items         LaundryOrderItem[]
   logistics     LaundryLogistics?
   payments      LaundryPayment[]
-  
+
   receivedAt    DateTime @default(now())
   expectedDate  DateTime?
   deliveredAt   DateTime?
-  
+
   notes         String?  @db.Text
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
+  @@unique([tenantId, id])
   @@unique([tenantId, orderNumber])
   @@index([tenantId, customerId])
 }
 
 model LaundryOrderItem {
   id          String   @id @default(cuid())
+  tenantId    String
   orderId     String
-  order       LaundryOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  
+  order       LaundryOrder @relation(fields: [tenantId, orderId], references: [tenantId, id], onDelete: Cascade)
+
   serviceId   String
   service     LaundryService @relation(fields: [serviceId], references: [id])
-  
+
   quantity    Int      @default(1)
   unitPrice   Float
   subtotal    Float
@@ -214,52 +217,61 @@ model LaundryOrderItem {
   color       String?
   brand       String?
   specialInstructions String? @db.Text
-  
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([tenantId, orderId])
 }
 
 model LaundryLogistics {
   id            String   @id @default(cuid())
-  orderId       String   @unique
-  order         LaundryOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  tenantId      String
+  orderId       String
+  order         LaundryOrder @relation(fields: [tenantId, orderId], references: [tenantId, id], onDelete: Cascade)
 
   pickupScheduledAt  DateTime?
   pickupCompletedAt   DateTime?
   deliveryScheduledAt DateTime?
   deliveryCompletedAt  DateTime?
-  
+
   driverName    String?
   vehicleId     String?
   address       String   @db.Text
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  @@unique([tenantId, orderId])
+  @@index([tenantId, orderId])
 }
 
 model LaundryPayment {
   id            String   @id @default(cuid())
+  tenantId      String
   orderId       String
-  order         LaundryOrder @relation(fields: [orderId], references: [id])
+  order         LaundryOrder @relation(fields: [tenantId, orderId], references: [tenantId, id], onDelete: Cascade)
 
   amount        Float
   method        String   // 'cash', 'card', 'online', 'wallet'
   transactionId String?
   status        String   @default("completed")
-  
+
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  @@index([tenantId, orderId])
 }
 
 model LaundryTicket {
   id          String   @id @default(cuid())
   tenantId    String
   tenant      Tenant   @relation(fields: [tenantId], references: [id])
-  
+
   ticketId    String   // CS-001
   customerId  String
-  customer    LaundryCustomer @relation(fields: [customerId], references: [id])
-  
+  customer    LaundryCustomer @relation(fields: [tenantId, customerId], references: [tenantId, id])
+
   orderId     String?
   subject     String
   message     String   @db.Text
@@ -267,7 +279,7 @@ model LaundryTicket {
   status      String   @default("open")
   type        String   @default("complaint") // 'complaint', 'feedback', 'inquiry'
   resolution  String?  @db.Text
-  
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -316,6 +328,7 @@ model LaundryEquipment {
 
 model LaundryRepair {
   id            String   @id @default(cuid())
+  tenantId      String
   equipmentId   String
   equipment     LaundryEquipment @relation(fields: [equipmentId], references: [id])
 
@@ -324,9 +337,11 @@ model LaundryRepair {
   technician    String?
   repairDate    DateTime
   status        String   @default("completed") // 'pending', 'in-progress', 'completed'
-  
+
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  @@index([tenantId, equipmentId])
 }
 
 // ==========================================
