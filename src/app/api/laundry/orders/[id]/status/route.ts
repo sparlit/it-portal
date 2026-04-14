@@ -32,15 +32,6 @@ export async function PATCH(
         }
       });
 
-      // Log activity
-      await prisma.activityLog.create({
-        data: {
-          tenantId,
-          user: 'System', // Should ideally be the logged in user
-          action: `Order ${order.orderNumber} status updated to ${status}`
-        }
-      });
-
       return NextResponse.json(order);
     } catch (error) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });

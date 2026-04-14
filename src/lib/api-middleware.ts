@@ -38,12 +38,6 @@ export async function withRBAC(
 ) {
   return withTenant(req, async (tenantId, user) => {
     if (!user) {
-      // Allow if it's a dev request with header but no session?
-      // For industrial grade, we should probably require session for RBAC.
-      // But let's allow ADMIN if x-tenant-id is present and no session for dev convenience
-      if (process.env.NODE_ENV !== 'production' && req.headers.get('x-tenant-id')) {
-        return handler(tenantId, { role: 'ADMIN' });
-      }
       return NextResponse.json({ error: 'Unauthorized: Authentication required for RBAC' }, { status: 401 });
     }
 

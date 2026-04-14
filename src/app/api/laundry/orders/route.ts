@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { withRBAC } from '@/lib/api-middleware';
+import { withTenant } from '@/lib/api-middleware';
 
 export async function GET(request: NextRequest) {
-  return withRBAC(request, 'read', 'LaundryOrder', async (tenantId: string) => {
+  return withTenant(request, async (tenantId: string) => {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
     const customerId = searchParams.get('customerId');
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  return withRBAC(request, 'create', 'LaundryOrder', async (tenantId: string) => {
+  return withTenant(request, async (tenantId: string) => {
     const body = await request.json();
     const { customerId, items, expectedDate, notes, address } = body;
 
