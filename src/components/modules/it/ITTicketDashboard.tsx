@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Ticket, Clock, CheckCircle2 } from 'lucide-react'
+import { Plus, Ticket, Clock, CheckCircle2, X } from 'lucide-react'
+import { ITTicketForm } from './ITTicketForm'
 
 interface ITTicket {
   id: string;
@@ -18,21 +19,24 @@ interface ITTicket {
 export function ITTicketDashboard() {
   const [tickets, setTickets] = useState<ITTicket[]>([])
   const [loading, setLoading] = useState(true)
+  const [showForm, setShowForm] = useState(false)
+
+  const fetchTickets = async () => {
+    setLoading(true)
+    try {
+      const response = await fetch('/api/it/tickets')
+      const data = await response.json()
+      if (Array.isArray(data)) {
+        setTickets(data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch tickets:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    async function fetchTickets() {
-      try {
-        const response = await fetch('/api/it/tickets')
-        const data = await response.json()
-        if (Array.isArray(data)) {
-          setTickets(data)
-        }
-      } catch (error) {
-        console.error('Failed to fetch tickets:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
     fetchTickets()
   }, [])
 
@@ -43,10 +47,28 @@ export function ITTicketDashboard() {
           <h2 className="text-3xl font-bold tracking-tight">IT Support Tickets</h2>
           <p className="text-muted-foreground">Manage internal technical support requests.</p>
         </div>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" /> New Ticket
+        <Button onClick={() => setShowForm(!showForm)} variant={showForm ? "outline" : "default"}>
+          {showForm ? (
+            <><X className="mr-2 h-4 w-4" /> Cancel</>
+          ) : (
+            <><Plus className="mr-2 h-4 w-4" /> New Ticket</>
+          )}
         </Button>
       </div>
+
+      {showForm && (
+        <Card className="border-primary/20 bg-primary/5">
+          <CardHeader>
+            <CardTitle className="text-lg">Create New IT Support Ticket</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ITTicketForm onSuccess={() => {
+              setShowForm(false)
+              fetchTickets()
+            }} />
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>

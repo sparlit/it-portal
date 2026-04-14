@@ -41,7 +41,7 @@ export function GlobalMetrics() {
             <BarChart3 className="h-4 w-4 opacity-70" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{metrics?.summary.completedOrdersToday} Orders</div>
+            <div className="text-2xl font-bold">{metrics?.summary?.completedOrdersToday || 0} Orders</div>
             <p className="text-xs opacity-70 mt-1">+12% from yesterday</p>
           </CardContent>
         </Card>
@@ -52,7 +52,7 @@ export function GlobalMetrics() {
             <Clock className="h-4 w-4 text-orange-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{metrics?.kpis.laundryTaktTime}h</div>
+            <div className="text-2xl font-bold">{metrics?.kpis?.laundryTaktTime || 0}h</div>
             <p className="text-xs text-muted-foreground mt-1">Avg cycle time</p>
           </CardContent>
         </Card>
@@ -63,7 +63,7 @@ export function GlobalMetrics() {
             <ShieldCheck className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{metrics?.kpis.slaCompliance}</div>
+            <div className="text-2xl font-bold">{metrics?.kpis?.slaCompliance || '100%'}</div>
             <p className="text-xs text-muted-foreground mt-1">Target: 95%</p>
           </CardContent>
         </Card>
@@ -74,7 +74,7 @@ export function GlobalMetrics() {
             <Users className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{metrics?.summary.activeUsers}</div>
+            <div className="text-2xl font-bold">{metrics?.summary?.activeUsers || 0}</div>
             <p className="text-xs text-muted-foreground mt-1">Across all modules</p>
           </CardContent>
         </Card>

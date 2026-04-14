@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Plus, MessageSquare, AlertCircle, CheckCircle } from 'lucide-react'
+import { Plus, MessageSquare, AlertCircle, CheckCircle, X } from 'lucide-react'
+import { LaundryTicketForm } from './LaundryTicketForm'
 
 interface LaundryTicket {
   id: string;
@@ -22,21 +23,24 @@ interface LaundryTicket {
 export function LaundryTicketDashboard() {
   const [tickets, setTickets] = useState<LaundryTicket[]>([])
   const [loading, setLoading] = useState(true)
+  const [showForm, setShowForm] = useState(false)
+
+  const fetchTickets = async () => {
+    setLoading(true)
+    try {
+      const response = await fetch('/api/laundry/tickets')
+      const data = await response.json()
+      if (Array.isArray(data)) {
+        setTickets(data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch laundry tickets:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    async function fetchTickets() {
-      try {
-        const response = await fetch('/api/laundry/tickets')
-        const data = await response.json()
-        if (Array.isArray(data)) {
-          setTickets(data)
-        }
-      } catch (error) {
-        console.error('Failed to fetch laundry tickets:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
     fetchTickets()
   }, [])
 
@@ -47,10 +51,31 @@ export function LaundryTicketDashboard() {
           <h2 className="text-3xl font-bold tracking-tight text-blue-600">Laundry Customer Service</h2>
           <p className="text-muted-foreground">Manage customer complaints and inquiries.</p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-          <Plus className="mr-2 h-4 w-4" /> Log Complaint
+        <Button
+          onClick={() => setShowForm(!showForm)}
+          className={showForm ? "bg-slate-200 text-slate-900 hover:bg-slate-300" : "bg-blue-600 hover:bg-blue-700 text-white"}
+        >
+          {showForm ? (
+            <><X className="mr-2 h-4 w-4" /> Cancel</>
+          ) : (
+            <><Plus className="mr-2 h-4 w-4" /> Log Complaint</>
+          )}
         </Button>
       </div>
+
+      {showForm && (
+        <Card className="border-blue-200 bg-blue-50/50">
+          <CardHeader>
+            <CardTitle className="text-lg text-blue-700">Log New Customer Complaint</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <LaundryTicketForm onSuccess={() => {
+              setShowForm(false)
+              fetchTickets()
+            }} />
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>

@@ -1,4 +1,6 @@
 import { PrismaClient } from '@prisma/client'
+import bcrypt from 'bcryptjs'
+
 const prisma = new PrismaClient()
 
 async function main() {
@@ -10,6 +12,20 @@ async function main() {
       id: 'default-tenant',
       name: 'Default Laundry & IT',
       slug: 'default-tenant'
+    }
+  })
+
+  // Create admin user
+  const hashedPassword = await bcrypt.hash('Admin@123', 10)
+  await prisma.user.upsert({
+    where: { username: 'admin' },
+    update: { password: hashedPassword, tenantId: tenant.id },
+    create: {
+      username: 'admin',
+      password: hashedPassword,
+      name: 'System Administrator',
+      role: 'admin',
+      tenantId: tenant.id
     }
   })
 
