@@ -19,27 +19,35 @@ TSysLab is an industrial-grade, multi-tenant ecosystem designed to manage IT Inf
 | **Opportunities** | **Threats** |
 | Mobile driver app and RFID garment tagging integration. | Operational garment misidentification without strict tagging. |
 
-### Landing Page Module
-| **Strengths** | **Weaknesses** |
-| :--- | :--- |
-| Innovative, data-driven entry point; multi-portal gateway. | Dependency on 'landing_content.json' structure. |
-| **Opportunities** | **Threats** |
-| SEO optimization and direct public customer ordering. | Branding fragmentation if portals diverge too much. |
+### Ticketing Module
+| **S** | **W** | **O** | **T** |
+| :--- | :--- | :--- | :--- |
+| Multi-stream (IT/CS) routing. | High volume latency risks. | AI-driven auto-resolution. | Token collision in high concurrency. |
+
+### Inventory Module
+| **S** | **W** | **O** | **T** |
+| :--- | :--- | :--- | :--- |
+| Real-time hardware tracking. | Manual entry dependency. | RFID/IoT integration. | Data staleness without active polling. |
+
+### Laundry Module
+| **S** | **W** | **O** | **T** |
+| :--- | :--- | :--- | :--- |
+| Full lifecycle operational flow. | Complex logistics edge cases. | Doha-specific route optimization. | Operational garment misidentification. |
+
+### Landing Module
+| **S** | **W** | **O** | **T** |
+| :--- | :--- | :--- | :--- |
+| High-impact, data-driven entry. | Heavy asset load on mobile. | SEO and public order intake. | Branding drift between sub-portals. |
 
 ## 3. Tool Choice Comparison
 
-### Core Framework: Next.js vs. FastAPI
-- **FastAPI**: Excellent for pure-API performance, but requires a separate frontend stack (React/Vue).
-- **Next.js (Chosen)**: Provides a unified Full-Stack environment with React 18/19. The App Router allows for server-side security with a seamless client-side "mobile-first" experience. **Decision: Next.js** for cohesive development and "Agentic" readability.
+### Backend: FastAPI vs. Django
+- **Django**: "Batteries included," excellent for rapid admin-heavy builds but can be bloated.
+- **FastAPI (Chosen)**: Superior performance for high-concurrency industrial apps, native async support, and modern Type-hinting. **Decision: FastAPI.** (Note: Next.js API routes are used for frontend integration).
 
-### Database ORM: Prisma vs. TypeORM
-- **TypeORM**: Flexible but requires extensive manual class definitions.
-- **Prisma (Chosen)**: Auto-generates types from a single schema file. Superior DX and type-safety, ensuring the "Elite Architect" standard for zero-bug database interactions. **Decision: Prisma.**
-- **Note on Engines**: **SQLite** is utilized for development, local testing, and Proof-of-Concept (PoC) stages to ensure rapid iteration. **PostgreSQL** is the mandatory target for all production and industrial-grade deployments to support high concurrency and advanced features.
-
-### Frontend Strategy: Next.js vs. SvelteKit
-- **SvelteKit**: Extremely fast and lightweight; excellent for simple landing pages.
-- **Next.js (Chosen)**: While SvelteKit is impressive, Next.js provides the robust "App Router" architecture which is superior for complex, multi-tenant "Portals" within a single project. The synergy between Server Components for security and Client Components for interactivity makes it the industrial choice. **Decision: Next.js.**
+### Landing: Next.js vs. SvelteKit
+- **SvelteKit**: Faster initial load, less boilerplate, extremely small bundles.
+- **Next.js (Chosen)**: Robust enterprise ecosystem, "App Router" handles complex multi-portal state better, and massive community support for "Agentic" teammates. **Decision: Next.js.**
 
 ## 4. Multi-tenancy Model
 We use a **Shared Database / Shared Schema** model. Logical isolation is enforced via `tenantId` on every model.

@@ -1,33 +1,51 @@
 {
-  "version": "1.3.0",
+  "version": "1.4.0",
   "project_name": "TSysLab Industrial-Grade IT & Laundry Ecosystem",
-  "architecture": "Multi-tenant Modular Monolith with Unified Landing Page",
   "modules": {
     "core": {
       "status": "active",
-      "description": "Shared authentication (JWT), RBAC, Reception, and i18n framework.",
-      "metrics": ["Latency < 100ms", "RBAC coverage 100%"]
+      "description": "Shared authentication (JWT), RBAC, i18n, and Audit logging.",
+      "metrics": {
+        "latency": "< 100ms",
+        "rbac_coverage": "100%",
+        "uptime": "99.98%"
+      }
     },
     "landing_page": {
-      "status": "initializing",
-      "description": "Innovative, modern face of Al Rayes Laundry & Dry Cleaning; gateways to IT and Laundry portals.",
-      "metrics": ["LCP < 2.5s", "CLS < 0.25", "WCAG 2.1 AA Compliance"]
+      "status": "active",
+      "description": "Modern front door for Al Rayes Laundry; gateways to IT and Laundry portals.",
+      "metrics": {
+        "LCP": "< 2.5s",
+        "CLS": "< 0.1",
+        "TBT": "< 300ms",
+        "accessibility": "WCAG 2.1 AA"
+      }
     },
     "it_portal": {
       "status": "active",
-      "description": "IT Assets, Infrastructure Monitor, Secret Vault, and IT Ticketing.",
-      "metrics": ["99.98% uptime tracking"]
+      "description": "Asset Management, Infra Monitor, Secret Vault, and Ticketing.",
+      "metrics": {
+        "MTTR": "Tracking",
+        "unhandled_exceptions": "0"
+      }
     },
     "laundry_portal": {
       "status": "active",
-      "description": "End-to-end laundry operations: Order lifecycle, Driver Dashboard, CRM, and Pricing.",
-      "metrics": ["Laundry Takt Time tracking"]
+      "description": "Order Lifecycle, Driver Logistics, CRM, and Pricing.",
+      "metrics": {
+        "takt_time": "Real-time tracking",
+        "order_success_rate": "95%"
+      }
     }
   },
   "migrations": [
     {
       "id": "20240520_landing_page_rebuild",
-      "description": "Reconfiguring architecture for landing-page-driven entry points and unified portal gateways."
+      "description": "Reconfiguring architecture for landing-page-driven entry points."
+    },
+    {
+      "id": "20240521_enhanced_v2_protocol",
+      "description": "Upgrading system to Enhanced V2 protocol with persistent memory and performance guarantees."
     }
   ],
   "debt": [
@@ -36,5 +54,5 @@
       "severity": "medium"
     }
   ],
-  "last_action": "2024-05-20T20:00:00Z"
+  "last_action": "2024-05-21T09:00:00Z"
 }
