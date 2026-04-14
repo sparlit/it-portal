@@ -38,9 +38,6 @@ export async function withRBAC(
 ) {
   return withTenant(req, async (tenantId, user) => {
     if (!user) {
-      if (process.env.NODE_ENV !== 'production' && req.headers.get('x-tenant-id')) {
-        return handler(tenantId, { role: 'ADMIN' });
-      }
       return NextResponse.json({ error: 'Unauthorized: Authentication required for RBAC' }, { status: 401 });
     }
 

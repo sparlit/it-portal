@@ -1,27 +1,27 @@
 {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "project_name": "TSysLab Industrial-Grade IT & Laundry Ecosystem",
   "architecture": "Multi-tenant Modular Monolith (Next.js 14, Prisma, PostgreSQL/SQLite)",
   "modules": {
     "core": {
       "status": "active",
-      "description": "Shared authentication (JWT), tenant management, and base UI components.",
-      "metrics": ["Latency < 100ms", "Zero unauthorized access", "JWT session management"]
+      "description": "Shared authentication (JWT), Granular RBAC, Reception Management, and i18n framework.",
+      "metrics": ["Latency < 100ms", "Zero unauthorized access", "RBAC coverage 100%"]
     },
     "it_management": {
       "status": "active",
-      "description": "IT Assets, IT Ticketing dashboard, Infrastructure monitoring.",
-      "metrics": ["99.9% uptime tracking", "Mean Time To Resolution (MTTR) tracking"]
+      "description": "IT Assets, Infrastructure Monitor, Secret Vault, and IT Ticketing.",
+      "metrics": ["99.98% uptime tracking", "MTTR tracking", "Credential access auditing"]
     },
     "laundry_management": {
-      "status": "initializing",
-      "description": "End-to-end laundry operations: Order lifecycle, Logistics, CRM, and Payments. Customer Service Ticket dashboard deployed.",
-      "metrics": ["On-time delivery rate > 95%", "Order processing accuracy"]
+      "status": "active",
+      "description": "End-to-end laundry operations: Order lifecycle, Mobile Logistics/Driver Dashboard, CRM, and Pricing Catalog.",
+      "metrics": ["Laundry Takt Time tracking", "Logistics route accuracy"]
     },
-    "ticketing_system": {
+    "analytics_system": {
       "status": "deployed",
-      "description": "Dual-stream ticketing: Internal IT vs. Customer Service Laundry.",
-      "metrics": ["SLA compliance", "CSAT score"]
+      "description": "Industrial KPI dashboard monitoring global operational health.",
+      "metrics": ["SLA compliance", "Daily throughput metrics"]
     }
   },
   "migrations": [
@@ -32,13 +32,21 @@
     {
       "id": "20240520_auth_and_ui",
       "description": "Implemented JWT auth, multi-tenant middleware, and modular ticket dashboards."
+    },
+    {
+      "id": "20240520_industrial_expansion",
+      "description": "Deployed RBAC, Infrastructure Monitoring, Secret Vault, Driver Dashboard, and Global Metrics."
     }
   ],
   "debt": [
     {
       "issue": "Production PostgreSQL migration (Currently SQLite for dev/PoC)",
       "severity": "medium"
+    },
+    {
+      "issue": "Full i18n translation coverage (Framework implemented)",
+      "severity": "low"
     }
   ],
-  "last_action": "2024-05-20T12:00:00Z"
+  "last_action": "2024-05-20T18:00:00Z"
 }

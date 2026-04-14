@@ -1,17 +1,31 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Key, Lock, Eye, EyeOff, Copy, Plus, ShieldAlert } from 'lucide-react'
 
 export function SecretVault() {
-  const [secrets] = useState([
-    { id: 1, system: 'PostgreSQL Root', username: 'postgres', password: '••••••••••••', updated: '2 days ago' },
-    { id: 2, system: 'WiFi Guest Qatar', username: 'guest', password: '••••••••••••', updated: '1 month ago' },
-    { id: 3, system: 'AWS IAM Operator', username: 'svc-it-laundry', password: '••••••••••••', updated: '5 days ago' }
-  ])
-  const [visible, setVisible] = useState<Record<number, boolean>>({})
+  const [secrets, setSecrets] = useState<any[]>([])
+  const [visible, setVisible] = useState<Record<string, boolean>>({})
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchSecrets() {
+      try {
+        const response = await fetch('/api/it/vault')
+        const data = await response.json()
+        if (Array.isArray(data)) {
+          setSecrets(data)
+        }
+      } catch (error) {
+        console.error('Failed to fetch secrets:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchSecrets()
+  }, [])
 
   return (
     <div className="space-y-6">
@@ -36,44 +50,50 @@ export function SecretVault() {
       </div>
 
       <div className="grid gap-4">
-        {secrets.map((secret) => (
-          <Card key={secret.id} className="border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="p-2 bg-slate-100 rounded-lg text-slate-600">
-                    <Key className="h-5 w-5" />
+        {loading ? (
+          <p className="text-center py-12 animate-pulse text-slate-400">Accessing Encrypted Storage...</p>
+        ) : secrets.length === 0 ? (
+          <p className="text-center py-12 text-slate-400">No administrative secrets stored.</p>
+        ) : (
+          secrets.map((secret) => (
+            <Card key={secret.id} className="border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="p-2 bg-slate-100 rounded-lg text-slate-600">
+                      <Key className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-slate-900">{secret.system}</h3>
+                      <p className="text-xs text-slate-500 font-medium">Credential Level: High</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-bold text-slate-900">{secret.system}</h3>
-                    <p className="text-xs text-slate-500 font-medium">Modified {secret.updated}</p>
-                  </div>
-                </div>
 
-                <div className="flex items-center gap-6">
-                  <div className="text-right">
-                    <p className="text-[10px] uppercase font-bold text-slate-400">Username</p>
-                    <p className="text-sm font-mono font-bold bg-slate-50 px-2 rounded border border-slate-100">{secret.username}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[10px] uppercase font-bold text-slate-400">Password</p>
-                    <p className="text-sm font-mono font-bold bg-slate-50 px-2 rounded border border-slate-100">
-                      {visible[secret.id] ? 'Admin@123!' : '••••••••••••'}
-                    </p>
-                  </div>
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => setVisible(v => ({...v, [secret.id]: !v[secret.id]}))}>
-                      {visible[secret.id] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </Button>
-                    <Button variant="ghost" size="icon">
-                      <Copy className="h-4 w-4" />
-                    </Button>
+                  <div className="flex items-center gap-6">
+                    <div className="text-right">
+                      <p className="text-[10px] uppercase font-bold text-slate-400">Username</p>
+                      <p className="text-sm font-mono font-bold bg-slate-50 px-2 rounded border border-slate-100">{secret.username}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[10px] uppercase font-bold text-slate-400">Password</p>
+                      <p className="text-sm font-mono font-bold bg-slate-50 px-2 rounded border border-slate-100">
+                        {visible[secret.id] ? secret.password : '••••••••••••'}
+                      </p>
+                    </div>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="icon" onClick={() => setVisible(v => ({...v, [secret.id]: !v[secret.id]}))}>
+                        {visible[secret.id] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                      <Button variant="ghost" size="icon">
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          ))
+        )}
       </div>
     </div>
   )
