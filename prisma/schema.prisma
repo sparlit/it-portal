@@ -1,4 +1,4 @@
-// Production-Grade Multi-tenant Prisma Schema
+// Production-Grade Multi-tenant Prisma Schema (PostgreSQL)
 // TSysLab Industrial-Grade IT & Laundry Ecosystem
 
 generator client {
@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -18,7 +18,7 @@ model Tenant {
   id            String   @id @default(cuid())
   name          String
   slug          String   @unique
-  address       String?
+  address       String?  @db.Text
   phone         String?
   email         String?
   logo          String?
@@ -62,12 +62,12 @@ model User {
   password  String
   name      String
   email     String?
-  role      String   @default("user") // 'admin', 'it_manager', 'laundry_manager', 'staff', 'user'
+  role      String   @default("user")
   status    String   @default("active")
 
   tenantId  String
   tenant    Tenant   @relation(fields: [tenantId], references: [id])
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -83,7 +83,7 @@ model Asset {
   tenantId      String
   tenant        Tenant   @relation(fields: [tenantId], references: [id])
 
-  type          String   // 'computer', 'server', 'printer', 'network', 'other'
+  type          String
   name          String
   model         String
   serialNumber  String
@@ -93,8 +93,8 @@ model Asset {
   assignedTo    String?
   purchaseDate  String?
   warrantyEnd   String?
-  notes         String?
-  
+  notes         String?  @db.Text
+
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -107,17 +107,17 @@ model ITTicket {
   tenantId    String
   tenant      Tenant   @relation(fields: [tenantId], references: [id])
 
-  ticketId    String   // TKT-IT-001 format
+  ticketId    String
   title       String
-  description String?
+  description String?  @db.Text
   priority    String   @default("medium")
   status      String   @default("open")
   category    String?
   requester   String
   assignedTo  String?
-  resolution  String?
+  resolution  String?  @db.Text
   slaDeadline String?
-  
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -137,10 +137,10 @@ model LaundryCustomer {
   name        String
   email       String?
   phone       String
-  address     String?
+  address     String?  @db.Text
   loyaltyTier String   @default("standard")
   totalOrders Int      @default(0)
-  notes       String?
+  notes       String?  @db.Text
 
   orders      LaundryOrder[]
   tickets     LaundryTicket[]
@@ -156,14 +156,14 @@ model LaundryService {
   tenantId    String
   tenant      Tenant   @relation(fields: [tenantId], references: [id])
 
-  name        String   // 'Dry Clean', 'Wash & Fold', 'Ironing', 'Stain Removal'
-  category    String   // 'Garment', 'Bedding', 'Curtains'
+  name        String
+  category    String
   price       Float
-  unit        String   @default("piece") // 'piece', 'kg'
-  estimatedTime Int    @default(24) // in hours
+  unit        String   @default("piece")
+  estimatedTime Int    @default(24)
 
   orderItems  LaundryOrderItem[]
-  
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -175,13 +175,13 @@ model LaundryOrder {
   tenantId      String
   tenant        Tenant   @relation(fields: [tenantId], references: [id])
 
-  orderNumber   String   // LND-001
+  orderNumber   String
   customerId    String
   customer      LaundryCustomer @relation(fields: [customerId], references: [id])
 
-  status        String   @default("received") // 'received', 'sorting', 'processing', 'quality-check', 'ready', 'out-for-delivery', 'delivered', 'cancelled'
+  status        String   @default("received")
   totalAmount   Float    @default(0)
-  paymentStatus String   @default("pending") // 'pending', 'partial', 'paid', 'refunded'
+  paymentStatus String   @default("pending")
 
   items         LaundryOrderItem[]
   logistics     LaundryLogistics?
@@ -191,7 +191,7 @@ model LaundryOrder {
   expectedDate  DateTime?
   deliveredAt   DateTime?
 
-  notes         String?
+  notes         String?  @db.Text
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -210,10 +210,10 @@ model LaundryOrderItem {
   quantity    Int      @default(1)
   unitPrice   Float
   subtotal    Float
-  garmentType String?  // 'Shirt', 'Suit', 'Blanket'
+  garmentType String?
   color       String?
   brand       String?
-  specialInstructions String?
+  specialInstructions String? @db.Text
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -231,7 +231,7 @@ model LaundryLogistics {
 
   driverName    String?
   vehicleId     String?
-  address       String
+  address       String   @db.Text
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -243,7 +243,7 @@ model LaundryPayment {
   order         LaundryOrder @relation(fields: [orderId], references: [id])
 
   amount        Float
-  method        String   // 'cash', 'card', 'online', 'wallet'
+  method        String
   transactionId String?
   status        String   @default("completed")
 
@@ -256,17 +256,17 @@ model LaundryTicket {
   tenantId    String
   tenant      Tenant   @relation(fields: [tenantId], references: [id])
 
-  ticketId    String   // CS-001
+  ticketId    String
   customerId  String
   customer    LaundryCustomer @relation(fields: [customerId], references: [id])
 
   orderId     String?
   subject     String
-  message     String
+  message     String   @db.Text
   priority    String   @default("medium")
   status      String   @default("open")
-  type        String   @default("complaint") // 'complaint', 'feedback', 'inquiry'
-  resolution  String?
+  type        String   @default("complaint")
+  resolution  String?  @db.Text
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -279,14 +279,14 @@ model LaundrySupplier {
   id            String   @id @default(cuid())
   tenantId      String
   tenant        Tenant   @relation(fields: [tenantId], references: [id])
-  
+
   name          String
   contactPerson String?
   phone         String?
   email         String?
-  category      String   // 'Chemicals', 'Machinery', 'Packaging', 'Uniforms'
-  address       String?
-  
+  category      String
+  address       String?  @db.Text
+
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -298,16 +298,16 @@ model LaundryEquipment {
   tenantId      String
   tenant        Tenant   @relation(fields: [tenantId], references: [id])
 
-  name          String   // 'Washer Extractor 1', 'Dryer 2'
+  name          String
   model         String?
   serialNumber  String?
   installationDate DateTime?
   lastServiceDate DateTime?
   nextServiceDate DateTime?
-  status        String   @default("operational") // 'operational', 'down', 'maintenance'
-  
+  status        String   @default("operational")
+
   repairs       LaundryRepair[]
-  
+
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -319,18 +319,18 @@ model LaundryRepair {
   equipmentId   String
   equipment     LaundryEquipment @relation(fields: [equipmentId], references: [id])
 
-  description   String
+  description   String   @db.Text
   cost          Float    @default(0)
   technician    String?
   repairDate    DateTime
-  status        String   @default("completed") // 'pending', 'in-progress', 'completed'
+  status        String   @default("completed")
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
 
 // ==========================================
-// SHARED UTILITY MODELS (Migrated)
+// SHARED UTILITY MODELS
 // ==========================================
 
 model Visitor {
@@ -339,7 +339,7 @@ model Visitor {
   tenant        Tenant   @relation(fields: [tenantId], references: [id])
   name          String
   company       String?
-  purpose       String?
+  purpose       String?  @db.Text
   checkInTime   String?
   checkOutTime  String?
   status        String   @default("expected")
@@ -411,7 +411,7 @@ model QuickNote {
   tenantId      String
   tenant        Tenant   @relation(fields: [tenantId], references: [id])
   title         String
-  content       String?
+  content       String?  @db.Text
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   @@index([tenantId])
@@ -422,7 +422,7 @@ model NotebookPage {
   tenantId      String
   tenant        Tenant   @relation(fields: [tenantId], references: [id])
   title         String
-  content       String?
+  content       String?  @db.Text
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   @@index([tenantId])
@@ -444,7 +444,7 @@ model KnowledgeArticle {
   tenantId      String
   tenant        Tenant   @relation(fields: [tenantId], references: [id])
   title         String
-  content       String?
+  content       String?  @db.Text
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   @@index([tenantId])
@@ -465,7 +465,7 @@ model Announcement {
   tenantId      String
   tenant        Tenant   @relation(fields: [tenantId], references: [id])
   title         String
-  content       String?
+  content       String?  @db.Text
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   @@index([tenantId])
@@ -498,7 +498,7 @@ model SystemAlert {
   tenantId      String
   tenant        Tenant   @relation(fields: [tenantId], references: [id])
   title         String
-  message       String?
+  message       String?  @db.Text
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   @@index([tenantId])
@@ -509,7 +509,7 @@ model Setting {
   tenantId      String
   tenant        Tenant   @relation(fields: [tenantId], references: [id])
   key           String
-  value         String?
+  value         String?  @db.Text
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   @@index([tenantId])

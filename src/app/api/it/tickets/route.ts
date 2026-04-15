@@ -1,14 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { withTenant } from '@/lib/api-middleware';
+import { withRBAC } from '@/lib/api-middleware';
+import { ITTicketCreateSchema } from '@/lib/validations/tickets';
+import { v4 as uuidv4 } from 'uuid';
 
 function generateTicketNumber(): string {
   const date = new Date();
-  return `TKT-IT-${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
+  const yearMonth = `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}`;
+  const shortUuid = uuidv4().split('-')[0].toUpperCase();
+  return `TKT-IT-${yearMonth}-${shortUuid}`;
 }
 
 export async function GET(request: NextRequest) {
-  return withTenant(request, async (tenantId: string) => {
+  return withRBAC(request, 'read', 'ITTicket', async (tenantId: string) => {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
     const priority = searchParams.get('priority');
@@ -27,27 +31,41 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  return withTenant(request, async (tenantId: string) => {
-    const body = await request.json();
+  return withRBAC(request, 'create', 'ITTicket', async (tenantId: string, user: any) => {
+    try {
+      const json = await request.json();
+      const body = ITTicketCreateSchema.parse(json);
 
-    if (!body.title || !body.requester) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-    }
+      const ticket = await prisma.iTTicket.create({
+        data: {
+          tenantId,
+          ticketId: generateTicketNumber(),
+          title: body.title,
+          description: body.description,
+          priority: body.priority,
+          category: body.category,
+          requester: body.requester,
+          assignedTo: body.assignedTo,
+          slaDeadline: body.slaDeadline,
+          status: 'open'
+        }
+      });
 
-    const ticket = await prisma.iTTicket.create({
-      data: {
-        tenantId,
-        ticketId: generateTicketNumber(),
-        title: body.title,
-        description: body.description,
-        priority: body.priority || 'medium',
-        category: body.category,
-        requester: body.requester,
-        assignedTo: body.assignedTo,
-        slaDeadline: body.slaDeadline
+      // Audit Log
+      await prisma.activityLog.create({
+        data: {
+          tenantId,
+          user: user?.username || 'system',
+          action: `Created IT Ticket ${ticket.ticketId}: ${ticket.title}`
+        }
+      });
+
+      return NextResponse.json(ticket, { status: 201 });
+    } catch (error: any) {
+      if (error.issues) {
+        return NextResponse.json({ error: 'Validation Failed', details: error.issues }, { status: 400 });
       }
-    });
-
-    return NextResponse.json(ticket, { status: 201 });
+      return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+    }
   });
 }

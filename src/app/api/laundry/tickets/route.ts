@@ -1,14 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { withTenant } from '@/lib/api-middleware';
+import { withRBAC } from '@/lib/api-middleware';
+import { LaundryTicketCreateSchema } from '@/lib/validations/tickets';
+import { v4 as uuidv4 } from 'uuid';
 
 function generateTicketNumber(): string {
   const date = new Date();
-  return `TKT-CS-${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
+  const yearMonth = `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}`;
+  const shortUuid = uuidv4().split('-')[0].toUpperCase();
+  return `TKT-CS-${yearMonth}-${shortUuid}`;
 }
 
 export async function GET(request: NextRequest) {
-  return withTenant(request, async (tenantId: string) => {
+  return withRBAC(request, 'read', 'LaundryTicket', async (tenantId: string) => {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
     const customerId = searchParams.get('customerId');
@@ -32,27 +36,40 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  return withTenant(request, async (tenantId: string) => {
-    const body = await request.json();
+  return withRBAC(request, 'create', 'LaundryTicket', async (tenantId: string, user: any) => {
+    try {
+      const json = await request.json();
+      const body = LaundryTicketCreateSchema.parse(json);
 
-    if (!body.customerId || !body.subject || !body.message) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-    }
+      const ticket = await prisma.laundryTicket.create({
+        data: {
+          tenantId,
+          ticketId: generateTicketNumber(),
+          customerId: body.customerId,
+          orderId: body.orderId,
+          subject: body.subject,
+          message: body.message,
+          priority: body.priority,
+          type: body.type,
+          status: 'open'
+        }
+      });
 
-    const ticket = await prisma.laundryTicket.create({
-      data: {
-        tenantId,
-        ticketId: generateTicketNumber(),
-        customerId: body.customerId,
-        orderId: body.orderId,
-        subject: body.subject,
-        message: body.message,
-        priority: body.priority || 'medium',
-        type: body.type || 'complaint',
-        status: 'open'
+      // Audit Log
+      await prisma.activityLog.create({
+        data: {
+          tenantId,
+          user: user?.username || 'system',
+          action: `Created Laundry CS Ticket ${ticket.ticketId} for customer ${ticket.customerId}`
+        }
+      });
+
+      return NextResponse.json(ticket, { status: 201 });
+    } catch (error: any) {
+      if (error.issues) {
+        return NextResponse.json({ error: 'Validation Failed', details: error.issues }, { status: 400 });
       }
-    });
-
-    return NextResponse.json(ticket, { status: 201 });
+      return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+    }
   });
 }
