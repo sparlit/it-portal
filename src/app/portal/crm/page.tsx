@@ -1,7 +1,8 @@
 "use client"
 
-import { GlobalMetrics } from '@/components/modules/core/GlobalMetrics'
+import { IndustrialDashboard } from '@/components/modules/core/IndustrialDashboard'
 import { LeadPipeline } from '@/components/modules/crm/LeadPipeline'
+import { Customer360 } from '@/components/modules/crm/Customer360'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Users, TrendingUp } from 'lucide-react'
@@ -51,7 +52,7 @@ export default function CRMPortal() {
           </TabsContent>
 
           <TabsContent value="customers">
-            <CardPlaceholder title="Unified Customer Profile Engine" />
+            <Customer360 />
           </TabsContent>
 
           <TabsContent value="marketing">
@@ -59,7 +60,7 @@ export default function CRMPortal() {
           </TabsContent>
 
           <TabsContent value="analytics">
-            <GlobalMetrics />
+            <IndustrialDashboard />
           </TabsContent>
         </Tabs>
       </div>

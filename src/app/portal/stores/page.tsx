@@ -1,6 +1,6 @@
 "use client"
 
-import { GlobalMetrics } from '@/components/modules/core/GlobalMetrics'
+import { IndustrialDashboard } from '@/components/modules/core/IndustrialDashboard'
 import { StockOverview } from '@/components/modules/stores/StockOverview'
 import { RequisitionManager } from '@/components/shared/procurement/RequisitionManager'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -70,7 +70,7 @@ export default function StoresPortal() {
           </TabsContent>
 
           <TabsContent value="analytics">
-            <GlobalMetrics />
+            <IndustrialDashboard />
           </TabsContent>
         </Tabs>
       </div>
