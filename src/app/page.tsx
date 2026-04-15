@@ -144,7 +144,7 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto text-center">
           <Star className="h-12 w-12 text-yellow-500 mx-auto mb-10 fill-current" />
           <div className="italic text-3xl md:text-4xl font-black text-slate-800 dark:text-slate-200 leading-tight mb-10">
-            "{landingContent.testimonials[0].quote}"
+            &quot;{landingContent.testimonials[0].quote}&quot;
           </div>
           <div className="flex items-center justify-center gap-4">
             <div className="w-12 h-12 rounded-full bg-slate-200 dark:bg-slate-800" />

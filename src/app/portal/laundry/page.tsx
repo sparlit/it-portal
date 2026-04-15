@@ -26,8 +26,8 @@ export default function LaundryPortal() {
               </Button>
             </Link>
             <div>
-              <h1 className="text-4xl font-extrabold tracking-tight">Laundry Management Portal</h1>
-              <p className="text-xl text-muted-foreground mt-2">Precision Cleaning Operations</p>
+              <h1 className="text-4xl font-extrabold tracking-tight">{t('laundry_portal_title')}</h1>
+              <p className="text-xl text-muted-foreground mt-2">{t('laundry_portal_subtitle')}</p>
             </div>
           </div>
           <div className="flex gap-4 items-center">
@@ -41,7 +41,7 @@ export default function LaundryPortal() {
               {language === 'en' ? 'العربية' : 'English'}
             </Button>
             <Badge variant="outline" className="text-xs uppercase tracking-wider px-3 py-1 bg-blue-50 text-blue-700 border-blue-200">
-              LAUNDRY V1.3
+              LAUNDRY V1.4
             </Badge>
           </div>
         </header>

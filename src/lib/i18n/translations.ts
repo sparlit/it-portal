@@ -28,6 +28,12 @@ export const translations = {
     delete: "Delete",
     view: "View",
 
+    // Portals
+    it_portal_title: "IT Operations Hub",
+    it_portal_subtitle: "Enterprise Infrastructure Management",
+    laundry_portal_title: "Laundry Management Portal",
+    laundry_portal_subtitle: "Precision Cleaning Operations",
+
     // Login
     login_title: "Terminal Access",
     login_subtitle: "Elite Infrastructure & Operations Portal",
@@ -61,6 +67,7 @@ export const translations = {
     add_asset: "Add Asset",
     infra_msg: "Real-time infrastructure health.",
     vault_subtitle: "Secure administrative credentials.",
+    it_support_subtitle: "Manage internal technical support requests.",
 
     // Laundry
     driver_dashboard: "Logistics Dashboard",
@@ -77,6 +84,7 @@ export const translations = {
     est_tat: "Est. TAT",
     add_service: "Add Service",
     crm_subtitle: "CRM & Loyalty tracking.",
+    laundry_workflow_msg: "Real-time operational workflow & lifecycle tracking.",
 
     // Metrics
     daily_throughput: "Throughput",
@@ -114,6 +122,12 @@ export const translations = {
     delete: "حذف",
     view: "عرض",
 
+    // Portals
+    it_portal_title: "مركز عمليات تقنية المعلومات",
+    it_portal_subtitle: "إدارة البنية التحتية للمؤسسات",
+    laundry_portal_title: "بوابة إدارة المغاسل",
+    laundry_portal_subtitle: "عمليات التنظيف الدقيقة",
+
     // Login
     login_title: "دخول المحطة",
     login_subtitle: "بوابة العمليات النخبوية",
@@ -147,6 +161,7 @@ export const translations = {
     add_asset: "إضافة أصل",
     infra_msg: "صحة البنية التحتية.",
     vault_subtitle: "بيانات الاعتماد الإدارية.",
+    it_support_subtitle: "إدارة طلبات الدعم الفني الداخلي.",
 
     // Laundry
     driver_dashboard: "لوحة الخدمات اللوجستية",
@@ -163,6 +178,7 @@ export const translations = {
     est_tat: "الوقت المتوقع",
     add_service: "إضافة خدمة",
     crm_subtitle: "إدارة العملاء والولاء.",
+    laundry_workflow_msg: "سير العمليات وتتبع دورة الحياة في الوقت الحقيقي.",
 
     // Metrics
     daily_throughput: "الإنتاجية",

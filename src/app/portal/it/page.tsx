@@ -28,8 +28,8 @@ export default function ITPortal() {
               </Button>
             </Link>
             <div>
-              <h1 className="text-4xl font-extrabold tracking-tight">IT Operations Hub</h1>
-              <p className="text-xl text-muted-foreground mt-2">Enterprise Infrastructure Management</p>
+              <h1 className="text-4xl font-extrabold tracking-tight">{t('it_portal_title')}</h1>
+              <p className="text-xl text-muted-foreground mt-2">{t('it_portal_subtitle')}</p>
             </div>
           </div>
           <div className="flex gap-4 items-center">
@@ -43,7 +43,7 @@ export default function ITPortal() {
               {language === 'en' ? 'العربية' : 'English'}
             </Button>
             <Badge variant="outline" className="text-xs uppercase tracking-wider px-3 py-1 bg-blue-50 text-blue-700 border-blue-200">
-              IT DEPT V1.3
+              IT DEPT V1.4
             </Badge>
           </div>
         </header>

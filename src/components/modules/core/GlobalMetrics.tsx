@@ -14,6 +14,11 @@ export function GlobalMetrics() {
     async function fetchMetrics() {
       try {
         const response = await fetch('/api/core/metrics')
+        if (!response.ok) {
+           // If API fails (e.g. 401/403), we'll just show fallback empty state
+           setLoading(false)
+           return
+        }
         const data = await response.json()
         setMetrics(data)
       } catch (error) {
@@ -27,6 +32,11 @@ export function GlobalMetrics() {
 
   if (loading) return <div className="p-8 text-center font-black animate-pulse text-slate-400 tracking-widest uppercase text-xs">{t('loading')}</div>
 
+  const displayMetrics = metrics || {
+    summary: { totalOrders: 0, activeUsers: 0 },
+    kpis: { laundryTaktTime: '0h', slaCompliance: '0%' }
+  }
+
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -36,7 +46,7 @@ export function GlobalMetrics() {
             <BarChart3 className="h-4 w-4 opacity-50" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-black">{metrics?.summary.totalOrders}</div>
+            <div className="text-3xl font-black">{displayMetrics.summary.totalOrders}</div>
             <p className="text-[10px] font-bold text-green-400 mt-1 uppercase tracking-tighter">+12.4% vs L7D</p>
           </CardContent>
         </Card>
@@ -47,7 +57,7 @@ export function GlobalMetrics() {
             <Clock className="h-4 w-4 text-orange-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-black text-slate-900">{metrics?.kpis.laundryTaktTime}</div>
+            <div className="text-3xl font-black text-slate-900">{displayMetrics.kpis.laundryTaktTime}</div>
             <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-tighter">Target: 4.0h</p>
           </CardContent>
         </Card>
@@ -58,7 +68,7 @@ export function GlobalMetrics() {
             <ShieldCheck className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-black text-slate-900">{metrics?.kpis.slaCompliance}</div>
+            <div className="text-3xl font-black text-slate-900">{displayMetrics.kpis.slaCompliance}</div>
             <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-tighter">Gold Tier Service</p>
           </CardContent>
         </Card>
@@ -69,7 +79,7 @@ export function GlobalMetrics() {
             <Users className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-black text-slate-900">{metrics?.summary.activeUsers}</div>
+            <div className="text-3xl font-black text-slate-900">{displayMetrics.summary.activeUsers}</div>
             <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-tighter">Concurrent Nodes</p>
           </CardContent>
         </Card>
