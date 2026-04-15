@@ -1,23 +1,9 @@
 # Architecture & Strategic Evaluation
 
 ## 1. Executive Summary
-TSysLab is an industrial-grade, multi-tenant ecosystem designed to manage IT Infrastructure and Laundry Operations. It utilizes a Modular Monolith architecture for ease of deployment while maintaining microservices-adjacent partitioning for future scalability.
+TSysLab is an industrial-grade, multi-tenant ecosystem designed to manage IT Infrastructure and Laundry Operations. It utilizes a Modular Monolith architecture with Universal OS compatibility via Docker.
 
 ## 2. Strategic Evaluation (SWOT)
-
-### IT Management Module
-| **Strengths** | **Weaknesses** |
-| :--- | :--- |
-| Centralized asset and ticket tracking; SLA-driven workflows. | High dependency on manual data entry for legacy hardware. |
-| **Opportunities** | **Threats** |
-| Automated network discovery via SNMP integration. | Rapid hardware turnover leading to asset data staleness. |
-
-### Laundry Management Module
-| **Strengths** | **Weaknesses** |
-| :--- | :--- |
-| Full lifecycle tracking (Order -> Process -> Delivery). | Complex logistics scheduling for high-density routes. |
-| **Opportunities** | **Threats** |
-| Mobile driver app and RFID garment tagging integration. | Operational garment misidentification without strict tagging. |
 
 ### Ticketing Module
 | **S** | **W** | **O** | **T** |
@@ -42,20 +28,19 @@ TSysLab is an industrial-grade, multi-tenant ecosystem designed to manage IT Inf
 ## 3. Tool Choice Comparison
 
 ### Backend: FastAPI vs. Django
-- **Django**: "Batteries included," excellent for rapid admin-heavy builds but can be bloated.
-- **FastAPI (Chosen)**: Superior performance for high-concurrency industrial apps, native async support, and modern Type-hinting. **Decision: FastAPI.** (Note: Next.js API routes are used for frontend integration).
+- **Django**: "Batteries included," excellent for rapid admin-heavy builds.
+- **FastAPI (Chosen)**: Superior performance for high-concurrency industrial apps, native async support. **Decision: FastAPI.** (Note: Next.js API routes used for FE integration).
 
-### Landing: Next.js vs. SvelteKit
-- **SvelteKit**: Faster initial load, less boilerplate, extremely small bundles.
-- **Next.js (Chosen)**: Robust enterprise ecosystem, "App Router" handles complex multi-portal state better, and massive community support for "Agentic" teammates. **Decision: Next.js.**
+### Database: PostgreSQL vs. SQLite
+- **SQLite**: Local file-based, excellent for testing.
+- **PostgreSQL (Chosen)**: Mandatory industrial standard for high-concurrency, robust multi-tenant data isolation, and universal OS scalability. **Decision: PostgreSQL.**
+
+### Deployment: Docker vs. PM2
+- **PM2**: Lightweight, but relies on host OS consistency.
+- **Docker (Chosen)**: Guaranteed universal cross-platform behavior (Linux, Windows, macOS) through immutable containerization. **Decision: Docker.**
 
 ## 4. Multi-tenancy Model
-We use a **Shared Database / Shared Schema** model. Logical isolation is enforced via `tenantId` on every model.
-- **Pros**: Cost-effective, easier migrations, global reporting.
-- **Cons**: Requires strict RLS (Row Level Security) or Middleware enforcement to prevent data leakage.
-- **Implementation**: Handled via `withRBAC` Higher-Order Function in API routes.
+Shared Database / Shared Schema model. Logical isolation via 'tenantId' on every model. RBAC enforced at the API level via 'withRBAC'.
 
-## 5. Security Protocol
-- **JWT**: Stateless session management via `jose`.
-- **Bcrypt**: Industrial-grade password hashing.
-- **CORS/Headers**: Restricted to tenant-specific domains in future production iterations.
+## 5. Universal OS Support
+The application is fully containerized. A standard 'docker-compose up' command initializes both the PostgreSQL node and the standalone Next.js application on any supported Operating System.
