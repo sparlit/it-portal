@@ -1,10 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { withTenant } from '@/lib/api-middleware';
+import { withRBAC } from '@/lib/api-middleware';
+import { AuditService } from '@/services/AuditService';
+import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 
+const UserSchema = z.object({
+  username: z.string().min(3).toLowerCase(),
+  password: z.string().min(6),
+  name: z.string().min(1),
+  email: z.string().email().optional().or(z.literal('')),
+  role: z.enum(['SUPERADMIN', 'ADMIN', 'MANAGER', 'OPERATOR', 'CUSTOMER']).default('OPERATOR'),
+});
+
 export async function GET(request: NextRequest) {
-  return withTenant(request, async (tenantId: string) => {
+  return withRBAC(request, 'read', 'User', async (tenantId) => {
     const users = await prisma.user.findMany({
       where: { tenantId },
       select: {
@@ -22,28 +32,33 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  return withTenant(request, async (tenantId: string) => {
-    const body = await request.json();
-    const { username, password, name, email, role } = body;
+  return withRBAC(request, 'manage', 'User', async (tenantId, user) => {
+    try {
+      const body = await request.json();
+      const validatedData = UserSchema.parse(body);
 
-    if (!username || !password || !name) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-    }
+      const hashedPassword = await bcrypt.hash(validatedData.password, 10);
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+      const newUser = await prisma.user.create({
+        data: {
+          tenantId,
+          username: validatedData.username,
+          password: hashedPassword,
+          name: validatedData.name,
+          email: validatedData.email || null,
+          role: validatedData.role
+        }
+      });
 
-    const user = await prisma.user.create({
-      data: {
-        tenantId,
-        username: username.toLowerCase(),
-        password: hashedPassword,
-        name,
-        email,
-        role: role || 'user'
+      await AuditService.logActivity(tenantId, user.id, user.username, `Created User: ${newUser.username}`);
+
+      const { password: _, ...userWithoutPassword } = newUser;
+      return NextResponse.json(userWithoutPassword, { status: 201 });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return NextResponse.json({ error: error.issues }, { status: 400 });
       }
-    });
-
-    const { password: _, ...userWithoutPassword } = user;
-    return NextResponse.json(userWithoutPassword, { status: 201 });
+      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
   });
 }

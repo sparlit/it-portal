@@ -1,9 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { withTenant } from '@/lib/api-middleware';
+import { withRBAC } from '@/lib/api-middleware';
+import { AuditService } from '@/services/AuditService';
+import { z } from 'zod';
+
+const OrderItemSchema = z.object({
+  serviceId: z.string().min(1),
+  quantity: z.number().int().positive(),
+  garmentType: z.string().optional(),
+  color: z.string().optional(),
+  specialInstructions: z.string().optional(),
+});
+
+const CreateOrderSchema = z.object({
+  customerId: z.string().min(1),
+  items: z.array(OrderItemSchema).min(1),
+  expectedDate: z.string().optional(),
+  notes: z.string().optional(),
+  address: z.string().optional(),
+});
 
 export async function GET(request: NextRequest) {
-  return withTenant(request, async (tenantId: string) => {
+  return withRBAC(request, 'read', 'LaundryOrder', async (tenantId) => {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
     const customerId = searchParams.get('customerId');
@@ -27,52 +45,79 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  return withTenant(request, async (tenantId: string) => {
-    const body = await request.json();
-    const { customerId, items, expectedDate, notes, address } = body;
+  return withRBAC(request, 'manage', 'LaundryOrder', async (tenantId, user) => {
+    try {
+      const body = await request.json();
+      const validatedData = CreateOrderSchema.parse(body);
 
-    if (!customerId || !items || items.length === 0) {
-      return NextResponse.json({ error: 'Customer and items are required' }, { status: 400 });
-    }
+      // Fetch services to verify pricing (Industrial standard: server-side price verification)
+      const serviceIds = validatedData.items.map(i => i.serviceId);
+      const services = await prisma.laundryService.findMany({
+        where: {
+          id: { in: serviceIds },
+          tenantId
+        }
+      });
 
-    // Calculate total amount
-    const totalAmount = items.reduce((sum: number, item: any) => sum + (item.quantity * item.unitPrice), 0);
-
-    const orderNumber = `LND-${Date.now().toString().slice(-6)}`;
-
-    const order = await prisma.laundryOrder.create({
-      data: {
-        tenantId,
-        orderNumber,
-        customerId,
-        totalAmount,
-        notes,
-        expectedDate: expectedDate ? new Date(expectedDate) : null,
-        status: 'received',
-        items: {
-          create: items.map((item: any) => ({
-            serviceId: item.serviceId,
-            quantity: item.quantity,
-            unitPrice: item.unitPrice,
-            subtotal: item.quantity * item.unitPrice,
-            garmentType: item.garmentType,
-            color: item.color,
-            specialInstructions: item.specialInstructions
-          }))
-        },
-        logistics: address ? {
-          create: {
-            address,
-            pickupScheduledAt: new Date()
-          }
-        } : undefined
-      },
-      include: {
-        items: true,
-        logistics: true
+      if (services.length !== new Set(serviceIds).size) {
+        return NextResponse.json({ error: 'One or more service IDs are invalid or belong to another tenant' }, { status: 400 });
       }
-    });
 
-    return NextResponse.json(order, { status: 201 });
+      const serviceMap = new Map(services.map(s => [s.id, s]));
+
+      let totalAmount = 0;
+      const orderItems = validatedData.items.map(item => {
+        const service = serviceMap.get(item.serviceId)!;
+        const subtotal = item.quantity * service.price;
+        totalAmount += subtotal;
+
+        return {
+          serviceId: item.serviceId,
+          quantity: item.quantity,
+          unitPrice: service.price,
+          subtotal,
+          garmentType: item.garmentType,
+          color: item.color,
+          specialInstructions: item.specialInstructions
+        };
+      });
+
+      const orderNumber = `LND-${Date.now().toString().slice(-6)}`;
+
+      const order = await prisma.laundryOrder.create({
+        data: {
+          tenantId,
+          orderNumber,
+          customerId: validatedData.customerId,
+          totalAmount,
+          notes: validatedData.notes,
+          expectedDate: validatedData.expectedDate ? new Date(validatedData.expectedDate) : null,
+          status: 'received',
+          items: {
+            create: orderItems
+          },
+          logistics: validatedData.address ? {
+            create: {
+              address: validatedData.address,
+              pickupScheduledAt: new Date()
+            }
+          } : undefined
+        },
+        include: {
+          items: true,
+          logistics: true
+        }
+      });
+
+      await AuditService.logActivity(tenantId, user.id, user.username, `Created Laundry Order: ${order.orderNumber}`);
+
+      return NextResponse.json(order, { status: 201 });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return NextResponse.json({ error: error.issues }, { status: 400 });
+      }
+      console.error('Order creation error:', error);
+      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
   });
 }

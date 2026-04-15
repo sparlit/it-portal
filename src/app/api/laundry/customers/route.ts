@@ -1,9 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { withTenant } from '@/lib/api-middleware';
+import { withRBAC } from '@/lib/api-middleware';
+import { AuditService } from '@/services/AuditService';
+import { z } from 'zod';
+
+const CustomerSchema = z.object({
+  name: z.string().min(1),
+  phone: z.string().min(1),
+  email: z.string().email().optional().or(z.literal('')),
+  address: z.string().optional(),
+  notes: z.string().optional(),
+});
 
 export async function GET(request: NextRequest) {
-  return withTenant(request, async (tenantId: string) => {
+  return withRBAC(request, 'read', 'LaundryCustomer', async (tenantId) => {
     const customers = await prisma.laundryCustomer.findMany({
       where: { tenantId },
       orderBy: { name: 'asc' }
@@ -13,25 +23,27 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  return withTenant(request, async (tenantId: string) => {
-    const body = await request.json();
-    const { name, phone, email, address, notes } = body;
+  return withRBAC(request, 'manage', 'LaundryCustomer', async (tenantId, user) => {
+    try {
+      const body = await request.json();
+      const validatedData = CustomerSchema.parse(body);
 
-    if (!name || !phone) {
-      return NextResponse.json({ error: 'Name and phone are required' }, { status: 400 });
-    }
+      const customer = await prisma.laundryCustomer.create({
+        data: {
+          tenantId,
+          ...validatedData,
+          email: validatedData.email || null
+        }
+      });
 
-    const customer = await prisma.laundryCustomer.create({
-      data: {
-        tenantId,
-        name,
-        phone,
-        email,
-        address,
-        notes
+      await AuditService.logActivity(tenantId, user.id, user.username, `Created Laundry Customer: ${customer.name}`);
+
+      return NextResponse.json(customer, { status: 201 });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return NextResponse.json({ error: error.issues }, { status: 400 });
       }
-    });
-
-    return NextResponse.json(customer, { status: 201 });
+      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
   });
 }

@@ -1,6 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { withTenant } from '@/lib/api-middleware';
+import { withRBAC } from '@/lib/api-middleware';
+import { AuditService } from '@/services/AuditService';
+import { z } from 'zod';
+
+const TicketSchema = z.object({
+  title: z.string().min(1),
+  description: z.string().optional(),
+  priority: z.enum(['low', 'medium', 'high', 'critical']).default('medium'),
+  category: z.string().optional(),
+  requester: z.string().min(1),
+  assignedTo: z.string().optional(),
+  slaDeadline: z.string().optional(),
+});
 
 function generateTicketNumber(): string {
   const date = new Date();
@@ -8,7 +20,7 @@ function generateTicketNumber(): string {
 }
 
 export async function GET(request: NextRequest) {
-  return withTenant(request, async (tenantId: string) => {
+  return withRBAC(request, 'read', 'ITTicket', async (tenantId) => {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
     const priority = searchParams.get('priority');
@@ -27,27 +39,27 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  return withTenant(request, async (tenantId: string) => {
-    const body = await request.json();
+  return withRBAC(request, 'manage', 'ITTicket', async (tenantId, user) => {
+    try {
+      const body = await request.json();
+      const validatedData = TicketSchema.parse(body);
 
-    if (!body.title || !body.requester) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-    }
+      const ticket = await prisma.iTTicket.create({
+        data: {
+          tenantId,
+          ticketId: generateTicketNumber(),
+          ...validatedData
+        }
+      });
 
-    const ticket = await prisma.iTTicket.create({
-      data: {
-        tenantId,
-        ticketId: generateTicketNumber(),
-        title: body.title,
-        description: body.description,
-        priority: body.priority || 'medium',
-        category: body.category,
-        requester: body.requester,
-        assignedTo: body.assignedTo,
-        slaDeadline: body.slaDeadline
+      await AuditService.logActivity(tenantId, user.id, user.username, `Created IT Ticket: ${ticket.ticketId}`);
+
+      return NextResponse.json(ticket, { status: 201 });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return NextResponse.json({ error: error.issues }, { status: 400 });
       }
-    });
-
-    return NextResponse.json(ticket, { status: 201 });
+      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
   });
 }

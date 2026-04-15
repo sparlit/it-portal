@@ -1,9 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { withTenant } from '@/lib/api-middleware';
+import { withRBAC } from '@/lib/api-middleware';
+import { AuditService } from '@/services/AuditService';
+import { z } from 'zod';
+
+const AssetSchema = z.object({
+  type: z.enum(['computer', 'server', 'printer', 'network', 'other']),
+  name: z.string().min(1),
+  model: z.string().min(1),
+  serialNumber: z.string().min(1),
+  location: z.string().min(1),
+  ipAddress: z.string().optional().or(z.literal('')),
+  status: z.string().default('active'),
+  assignedTo: z.string().optional(),
+  purchaseDate: z.string().optional(),
+  warrantyEnd: z.string().optional(),
+  notes: z.string().optional(),
+});
 
 export async function GET(request: NextRequest) {
-  return withTenant(request, async (tenantId: string) => {
+  return withRBAC(request, 'read', 'Asset', async (tenantId) => {
     const assets = await prisma.asset.findMany({
       where: { tenantId },
       orderBy: { updatedAt: 'desc' }
@@ -13,30 +29,27 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  return withTenant(request, async (tenantId: string) => {
-    const body = await request.json();
+  return withRBAC(request, 'manage', 'Asset', async (tenantId, user) => {
+    try {
+      const body = await request.json();
+      const validatedData = AssetSchema.parse(body);
 
-    if (!body.name || !body.serialNumber || !body.type) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-    }
+      const asset = await prisma.asset.create({
+        data: {
+          tenantId,
+          ...validatedData,
+          ipAddress: validatedData.ipAddress || null
+        }
+      });
 
-    const asset = await prisma.asset.create({
-      data: {
-        tenantId,
-        name: body.name,
-        type: body.type,
-        model: body.model || 'Unknown',
-        serialNumber: body.serialNumber,
-        location: body.location || 'Default',
-        ipAddress: body.ipAddress,
-        status: body.status || 'active',
-        assignedTo: body.assignedTo,
-        purchaseDate: body.purchaseDate,
-        warrantyEnd: body.warrantyEnd,
-        notes: body.notes
+      await AuditService.logActivity(tenantId, user.id, user.username, `Added Asset: ${asset.name} (${asset.serialNumber})`);
+
+      return NextResponse.json(asset, { status: 201 });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return NextResponse.json({ error: error.issues }, { status: 400 });
       }
-    });
-
-    return NextResponse.json(asset, { status: 201 });
+      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
   });
 }
