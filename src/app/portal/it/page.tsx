@@ -6,7 +6,7 @@ import { InfrastructureMonitor } from '@/components/modules/it/InfrastructureMon
 import { SecretVault } from '@/components/modules/it/SecretVault'
 import { KnowledgeBase } from '@/components/modules/it/KnowledgeBase'
 import { RequisitionManager } from '@/components/shared/procurement/RequisitionManager'
-import { GlobalMetrics } from '@/components/modules/core/GlobalMetrics'
+import { IndustrialDashboard } from '@/components/modules/core/IndustrialDashboard'
 import { ReceptionDesk } from '@/components/modules/core/ReceptionDesk'
 import { AuditTrail } from '@/components/modules/core/AuditTrail'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -66,7 +66,7 @@ export default function ITPortal() {
           </div>
 
           <TabsContent value="analytics">
-            <GlobalMetrics />
+            <IndustrialDashboard />
           </TabsContent>
 
           <TabsContent value="reception">

@@ -6,7 +6,7 @@ import { LaundryCustomerManager } from '@/components/modules/laundry/LaundryCust
 import { ServicePricing } from '@/components/modules/laundry/ServicePricing'
 import { DriverScheduling } from '@/components/modules/laundry/DriverScheduling'
 import { RequisitionManager } from '@/components/shared/procurement/RequisitionManager'
-import { GlobalMetrics } from '@/components/modules/core/GlobalMetrics'
+import { IndustrialDashboard } from '@/components/modules/core/IndustrialDashboard'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { useI18n } from '@/lib/i18n/context'
@@ -86,7 +86,7 @@ export default function LaundryPortal() {
           </TabsContent>
 
           <TabsContent value="analytics">
-            <GlobalMetrics />
+            <IndustrialDashboard />
           </TabsContent>
         </Tabs>
       </div>

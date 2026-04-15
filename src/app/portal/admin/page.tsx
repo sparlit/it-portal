@@ -3,22 +3,28 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { ShieldCheck, UserPlus, ShieldAlert, Key, Globe, LayoutDashboard } from 'lucide-react'
-import { useI18n } from '@/lib/i18n/context'
+import { Input } from '@/components/ui/input'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { ShieldCheck, UserPlus, Loader2, Globe, LayoutDashboard, Key, ShieldAlert } from 'lucide-react'
 
 export default function AdminPortal() {
-  const { t } = useI18n()
   const [users, setUsers] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
-  // Mock data for initial UI - in real app would fetch from /api/admin/users
   useEffect(() => {
-    setUsers([
-      { id: '1', username: 'admin', name: 'System Admin', role: 'SUPERADMIN', status: 'active', portals: ['it', 'laundry', 'admin'] },
-      { id: '2', username: 'transport_mgr', name: 'Transport Manager', role: 'MANAGER', status: 'active', portals: ['transport', 'stores'] },
-    ])
+    fetchUsers()
   }, [])
+
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch('/api/core/admin/users')
+      const data = await res.json()
+      if (Array.isArray(data)) setUsers(data)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <main className="container mx-auto p-8">
@@ -32,84 +38,78 @@ export default function AdminPortal() {
             <p className="text-slate-500 font-medium">Unified User & Portal Governance</p>
           </div>
         </div>
-        <div className="flex gap-2">
-           <Button className="bg-slate-900 text-white gap-2">
-             <UserPlus className="h-4 w-4" /> Provision New User
-           </Button>
-        </div>
+        <Button className="bg-slate-900 text-white gap-2">
+           <UserPlus className="h-4 w-4" /> Provision New User
+        </Button>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="md:col-span-2 border-2">
           <CardHeader>
-            <CardTitle className="text-xl flex items-center gap-2">
+            <CardTitle className="text-xl flex items-center gap-2 text-slate-900">
                <Globe className="h-5 w-5 text-blue-600" />
                Identity Management
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="relative overflow-x-auto border rounded-xl">
-              <table className="w-full text-sm text-left text-slate-500">
-                <thead className="text-xs text-slate-700 uppercase bg-slate-50 border-b">
-                  <tr>
-                    <th className="px-6 py-4">User</th>
-                    <th className="px-6 py-4">Global Role</th>
-                    <th className="px-6 py-4">Portal Access</th>
-                    <th className="px-6 py-4">Status</th>
-                    <th className="px-6 py-4 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map((u) => (
-                    <tr key={u.id} className="bg-white border-b hover:bg-slate-50 transition-colors">
-                      <td className="px-6 py-4 font-bold text-slate-900">
-                        {u.name}
-                        <div className="text-[10px] text-slate-400 font-mono">@{u.username}</div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <Badge variant="outline" className={u.role === 'SUPERADMIN' ? 'bg-red-50 text-red-700 border-red-200' : ''}>
-                          {u.role}
-                        </Badge>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex gap-1 flex-wrap">
-                          {u.portals.map((p: string) => (
-                            <Badge key={p} variant="secondary" className="text-[10px] uppercase">
-                              {p}
-                            </Badge>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="flex items-center gap-1 text-green-600 font-bold text-xs uppercase">
-                          <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                          {u.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <Button variant="ghost" size="sm" className="text-blue-600 font-bold">Configure</Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            {loading ? (
+                <div className="flex justify-center py-20"><Loader2 className="h-10 w-10 animate-spin text-slate-300" /></div>
+            ) : (
+                <div className="relative overflow-x-auto border rounded-xl">
+                    <Table>
+                        <TableHeader>
+                            <TableRow className="bg-slate-50 uppercase text-[10px] font-black tracking-widest">
+                                <TableHead>User Identity</TableHead>
+                                <TableHead>Global Role</TableHead>
+                                <TableHead>Portal Status</TableHead>
+                                <TableHead className="text-right">Action</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {users.map((u) => (
+                                <TableRow key={u.id} className="hover:bg-slate-50 transition-colors">
+                                    <TableCell className="font-bold text-slate-900">
+                                        {u.name}
+                                        <div className="text-[10px] text-slate-400 font-mono italic">@{u.username}</div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge variant="outline" className={u.role === 'SUPERADMIN' ? 'bg-red-50 text-red-700 border-red-200' : ''}>
+                                            {u.role}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex gap-1 flex-wrap">
+                                            {Object.keys(u.portalPermissions || {}).map(p => (
+                                                <Badge key={p} variant="secondary" className="text-[10px] uppercase">{p}</Badge>
+                                            ))}
+                                            {u.role === 'SUPERADMIN' && <Badge className="bg-slate-900 text-white text-[10px] uppercase">ALL ACCESS</Badge>}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <Button variant="ghost" size="sm" className="text-blue-600 font-bold uppercase tracking-widest text-[10px]">Configure</Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
+            )}
           </CardContent>
         </Card>
 
         <div className="space-y-6">
           <Card className="border-2 border-amber-100 bg-amber-50/30">
             <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
+              <CardTitle className="text-lg flex items-center gap-2 text-amber-900">
                 <ShieldAlert className="h-5 w-5 text-amber-600" />
                 Security Overrides
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Button variant="outline" className="w-full justify-start gap-2 bg-white">
+              <Button variant="outline" className="w-full justify-start gap-2 bg-white border-amber-200 text-amber-900 hover:bg-amber-100">
                 <Key className="h-4 w-4" /> Rotate Master Vault Key
               </Button>
-              <Button variant="outline" className="w-full justify-start gap-2 bg-white">
+              <Button variant="outline" className="w-full justify-start gap-2 bg-white border-amber-200 text-amber-900 hover:bg-amber-100">
                 <LayoutDashboard className="h-4 w-4" /> Global Session Reset
               </Button>
             </CardContent>
@@ -117,20 +117,16 @@ export default function AdminPortal() {
 
           <Card className="border-2">
             <CardHeader>
-              <CardTitle className="text-lg">Portal Statistics</CardTitle>
+              <CardTitle className="text-lg font-bold">Node Statistics</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
                <div className="flex justify-between items-center text-sm border-b pb-2">
-                 <span className="text-slate-500 font-medium">Total Portals</span>
-                 <span className="font-bold">8 Active</span>
+                 <span className="text-slate-500 font-medium">Provisioned Users</span>
+                 <span className="font-bold">{users.length}</span>
                </div>
                <div className="flex justify-between items-center text-sm border-b pb-2">
-                 <span className="text-slate-500 font-medium">Concurrent Users</span>
-                 <span className="font-bold">12</span>
-               </div>
-               <div className="flex justify-between items-center text-sm">
-                 <span className="text-slate-500 font-medium">Auth Failures (24h)</span>
-                 <span className="font-bold text-red-600">0</span>
+                 <span className="text-slate-500 font-medium">Active Portals</span>
+                 <span className="font-bold">8</span>
                </div>
             </CardContent>
           </Card>

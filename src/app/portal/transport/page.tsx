@@ -1,6 +1,6 @@
 "use client"
 
-import { GlobalMetrics } from '@/components/modules/core/GlobalMetrics'
+import { IndustrialDashboard } from '@/components/modules/core/IndustrialDashboard'
 import { FleetMap } from '@/components/modules/transport/FleetMap'
 import { DriverScheduling } from '@/components/modules/laundry/DriverScheduling'
 import { RequisitionManager } from '@/components/shared/procurement/RequisitionManager'
@@ -66,7 +66,7 @@ export default function TransportPortal() {
           </TabsContent>
 
           <TabsContent value="analytics">
-            <GlobalMetrics />
+            <IndustrialDashboard />
           </TabsContent>
         </Tabs>
       </div>
