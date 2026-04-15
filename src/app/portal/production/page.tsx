@@ -3,6 +3,7 @@
 import { IndustrialDashboard } from '@/components/modules/core/IndustrialDashboard'
 import { BatchMonitor } from '@/components/modules/production/BatchMonitor'
 import { RequisitionManager } from '@/components/shared/procurement/RequisitionManager'
+import { OEMetrics } from '@/components/modules/production/OEMetrics'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Factory } from 'lucide-react'
@@ -57,7 +58,7 @@ export default function ProductionPortal() {
           </TabsContent>
 
           <TabsContent value="efficiency">
-            <CardPlaceholder title="Overall Equipment Effectiveness" />
+            <OEMetrics />
           </TabsContent>
 
           <TabsContent value="indent">

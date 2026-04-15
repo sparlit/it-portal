@@ -6,11 +6,13 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { ShieldCheck, UserPlus, Loader2, Globe, LayoutDashboard, Key, ShieldAlert } from 'lucide-react'
+import { ShieldCheck, UserPlus, Loader2, Globe, LayoutDashboard, Key, ShieldAlert, X } from 'lucide-react'
+import { UserProvisioningForm } from '@/components/shared/forms/UserProvisioningForm'
 
 export default function AdminPortal() {
   const [users, setUsers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [showProvision, setShowProvision] = useState(false)
 
   useEffect(() => {
     fetchUsers()
@@ -38,10 +40,23 @@ export default function AdminPortal() {
             <p className="text-slate-500 font-medium">Unified User & Portal Governance</p>
           </div>
         </div>
-        <Button className="bg-slate-900 text-white gap-2">
-           <UserPlus className="h-4 w-4" /> Provision New User
+        <Button
+            className={`${showProvision ? 'bg-red-600' : 'bg-slate-900'} text-white gap-2 transition-colors`}
+            onClick={() => setShowProvision(!showProvision)}
+        >
+           {showProvision ? <X className="h-4 w-4" /> : <UserPlus className="h-4 w-4" />}
+           {showProvision ? 'Close Panel' : 'Provision New User'}
         </Button>
       </header>
+
+      {showProvision && (
+          <div className="mb-8 animate-in slide-in-from-top duration-300">
+              <UserProvisioningForm onComplete={() => {
+                  setShowProvision(false)
+                  fetchUsers()
+              }} />
+          </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="md:col-span-2 border-2">

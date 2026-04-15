@@ -4,6 +4,7 @@ import { IndustrialDashboard } from '@/components/modules/core/IndustrialDashboa
 import { FleetMap } from '@/components/modules/transport/FleetMap'
 import { DriverScheduling } from '@/components/modules/laundry/DriverScheduling'
 import { RequisitionManager } from '@/components/shared/procurement/RequisitionManager'
+import { VehicleServiceLogs } from '@/components/modules/transport/VehicleServiceLogs'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Globe, ArrowLeft, Truck } from 'lucide-react'
@@ -58,7 +59,7 @@ export default function TransportPortal() {
           </TabsContent>
 
           <TabsContent value="fleet-maintenance">
-            <CardPlaceholder title="Vehicle Service Logs" />
+            <VehicleServiceLogs />
           </TabsContent>
 
           <TabsContent value="indent">
