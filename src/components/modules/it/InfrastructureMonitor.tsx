@@ -34,8 +34,21 @@ export function InfrastructureMonitor() {
           <h2 className="text-3xl font-bold tracking-tight text-slate-900">Infrastructure Monitoring</h2>
           <p className="text-slate-500">Real-time status of critical systems and network nodes.</p>
         </div>
-        <Button variant="outline" size="sm" className="font-bold border-slate-300">
-          <RefreshCw className="mr-2 h-4 w-4" /> Refresh Status
+        <Button
+          variant="outline"
+          size="sm"
+          className="font-bold border-slate-300"
+          onClick={() => {
+            setLoading(true);
+            fetch('/api/it/monitoring')
+              .then(res => res.json())
+              .then(data => {
+                if (Array.isArray(data)) setServers(data);
+                setLoading(false);
+              });
+          }}
+        >
+          <RefreshCw className={`mr-2 h-4 w-4 \${loading ? 'animate-spin' : ''}`} /> Refresh Status
         </Button>
       </div>
 

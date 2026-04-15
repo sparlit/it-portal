@@ -1,12 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { withTenant } from '@/lib/api-middleware';
+import { withRBAC } from '@/lib/api-middleware';
+import { AuditService } from '@/services/AuditService';
+import { z } from 'zod';
+
+const TicketUpdateSchema = z.object({
+  title: z.string().min(1).optional(),
+  description: z.string().optional().nullable(),
+  status: z.string().optional(),
+  priority: z.enum(['low', 'medium', 'high', 'critical']).optional(),
+  category: z.string().optional().nullable(),
+  assignedTo: z.string().optional().nullable(),
+  resolution: z.string().optional().nullable(),
+  slaDeadline: z.string().optional().nullable(),
+});
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  return withTenant(request, async (tenantId: string) => {
+  return withRBAC(request, 'read', 'ITTicket', async (tenantId) => {
     const ticket = await prisma.iTTicket.findFirst({
       where: {
         id: params.id,
@@ -26,35 +39,28 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  return withTenant(request, async (tenantId: string) => {
-    const body = await request.json();
+  return withRBAC(request, 'manage', 'ITTicket', async (tenantId, user) => {
+    try {
+      const body = await request.json();
+      const validatedData = TicketUpdateSchema.parse(body);
 
-    const ticket = await prisma.iTTicket.updateMany({
-      where: {
-        id: params.id,
-        tenantId
-      },
-      data: {
-        title: body.title,
-        description: body.description,
-        status: body.status,
-        priority: body.priority,
-        category: body.category,
-        assignedTo: body.assignedTo,
-        resolution: body.resolution,
-        slaDeadline: body.slaDeadline
+      const ticket = await prisma.iTTicket.update({
+        where: {
+          id: params.id,
+          tenantId
+        },
+        data: validatedData
+      });
+
+      await AuditService.logActivity(tenantId, user.id, user.username, `Updated IT Ticket: ${ticket.ticketId}`);
+
+      return NextResponse.json(ticket);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return NextResponse.json({ error: error.issues }, { status: 400 });
       }
-    });
-
-    if (ticket.count === 0) {
       return NextResponse.json({ error: 'Ticket not found' }, { status: 404 });
     }
-
-    const updatedTicket = await prisma.iTTicket.findUnique({
-      where: { id: params.id }
-    });
-
-    return NextResponse.json(updatedTicket);
   });
 }
 
@@ -62,18 +68,20 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  return withTenant(request, async (tenantId: string) => {
-    const result = await prisma.iTTicket.deleteMany({
-      where: {
-        id: params.id,
-        tenantId
-      }
-    });
+  return withRBAC(request, 'manage', 'ITTicket', async (tenantId, user) => {
+    try {
+      const ticket = await prisma.iTTicket.delete({
+        where: {
+          id: params.id,
+          tenantId
+        }
+      });
 
-    if (result.count === 0) {
+      await AuditService.logActivity(tenantId, user.id, user.username, `Deleted IT Ticket: ${ticket.ticketId}`);
+
+      return NextResponse.json({ message: 'Ticket deleted successfully' });
+    } catch (error) {
       return NextResponse.json({ error: 'Ticket not found' }, { status: 404 });
     }
-
-    return NextResponse.json({ message: 'Ticket deleted successfully' });
   });
 }

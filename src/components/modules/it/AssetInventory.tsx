@@ -4,6 +4,24 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import {
   Plus,
   Monitor,
@@ -12,7 +30,8 @@ import {
   Wifi,
   Search,
   History,
-  AlertCircle
+  AlertCircle,
+  Loader2
 } from 'lucide-react'
 
 interface Asset {
@@ -30,23 +49,67 @@ interface Asset {
 export function AssetInventory() {
   const [assets, setAssets] = useState<Asset[]>([])
   const [loading, setLoading] = useState(true)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const [formData, setFormData] = useState({
+    name: '',
+    type: 'computer',
+    model: '',
+    serialNumber: '',
+    location: '',
+    ipAddress: '',
+  })
+
+  async function fetchAssets() {
+    setLoading(true)
+    try {
+      const response = await fetch('/api/it/assets')
+      const data = await response.json()
+      if (Array.isArray(data)) {
+        setAssets(data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch assets:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    async function fetchAssets() {
-      try {
-        const response = await fetch('/api/it/assets')
-        const data = await response.json()
-        if (Array.isArray(data)) {
-          setAssets(data)
-        }
-      } catch (error) {
-        console.error('Failed to fetch assets:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
     fetchAssets()
   }, [])
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    try {
+      const response = await fetch('/api/it/assets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
+      if (response.ok) {
+        setIsDialogOpen(false)
+        setFormData({
+          name: '',
+          type: 'computer',
+          model: '',
+          serialNumber: '',
+          location: '',
+          ipAddress: '',
+        })
+        fetchAssets()
+      } else {
+        const error = await response.json()
+        alert('Error: ' + JSON.stringify(error))
+      }
+    } catch (error) {
+      console.error('Failed to create asset:', error)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   const getIcon = (type: string) => {
     switch (type.toLowerCase()) {
@@ -65,9 +128,98 @@ export function AssetInventory() {
           <h2 className="text-3xl font-bold tracking-tight">IT Asset Inventory</h2>
           <p className="text-muted-foreground">Manage and track company hardware and infrastructure.</p>
         </div>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" /> Add Asset
-        </Button>
+
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" /> Add Asset
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Add New Asset</DialogTitle>
+              <DialogDescription>
+                Enter the details of the new hardware asset.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="name" className="text-right">Name</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="col-span-3"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="type" className="text-right">Type</Label>
+                <Select
+                  value={formData.type}
+                  onValueChange={(value) => setFormData({ ...formData, type: value })}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="computer">Computer</SelectItem>
+                    <SelectItem value="server">Server</SelectItem>
+                    <SelectItem value="printer">Printer</SelectItem>
+                    <SelectItem value="network">Network</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="model" className="text-right">Model</Label>
+                <Input
+                  id="model"
+                  value={formData.model}
+                  onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+                  className="col-span-3"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="serial" className="text-right">Serial #</Label>
+                <Input
+                  id="serial"
+                  value={formData.serialNumber}
+                  onChange={(e) => setFormData({ ...formData, serialNumber: e.target.value })}
+                  className="col-span-3"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="location" className="text-right">Location</Label>
+                <Input
+                  id="location"
+                  value={formData.location}
+                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  className="col-span-3"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="ip" className="text-right">IP Address</Label>
+                <Input
+                  id="ip"
+                  value={formData.ipAddress}
+                  onChange={(e) => setFormData({ ...formData, ipAddress: e.target.value })}
+                  className="col-span-3"
+                  placeholder="Optional"
+                />
+              </div>
+              <DialogFooter>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Save Asset
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

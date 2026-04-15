@@ -7,8 +7,11 @@ const ENCRYPTION_KEY = process.env.VAULT_MASTER_KEY;
 // We only want to throw if we're actually running in a real production environment.
 // For build time, we can allow the fallback.
 
-// 32-byte key (either from env or a stable dev fallback)
-const MASTER_KEY = Buffer.from(ENCRYPTION_KEY || '0123456789abcdef0123456789abcdef', 'utf8').slice(0, 32);
+// 32-byte key
+if (!ENCRYPTION_KEY) {
+  throw new Error('CRITICAL: VAULT_MASTER_KEY environment variable is missing.');
+}
+const MASTER_KEY = Buffer.from(ENCRYPTION_KEY, 'utf8').slice(0, 32);
 const IV_LENGTH = 16;
 
 export class VaultService {

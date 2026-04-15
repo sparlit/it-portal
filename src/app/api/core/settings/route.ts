@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { withTenant } from '@/lib/api-middleware';
+import { withRBAC } from '@/lib/api-middleware';
+import { AuditService } from '@/services/AuditService';
+import { z } from 'zod';
+
+const SettingSchema = z.object({
+  key: z.string().min(1),
+  value: z.string().optional().nullable(),
+});
 
 export async function GET(request: NextRequest) {
-  return withTenant(request, async (tenantId: string) => {
+  return withRBAC(request, 'read', 'Setting', async (tenantId) => {
     const settings = await prisma.setting.findMany({
       where: { tenantId }
     });
@@ -12,29 +19,34 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  return withTenant(request, async (tenantId: string) => {
-    const body = await request.json();
-    const { key, value } = body;
+  return withRBAC(request, 'manage', 'Setting', async (tenantId, user) => {
+    try {
+      const body = await request.json();
+      const validatedData = SettingSchema.parse(body);
 
-    if (!key) {
-      return NextResponse.json({ error: 'Key is required' }, { status: 400 });
-    }
-
-    const setting = await prisma.setting.upsert({
-      where: {
-        tenantId_key: {
+      const setting = await prisma.setting.upsert({
+        where: {
+          tenantId_key: {
+            tenantId,
+            key: validatedData.key
+          }
+        },
+        update: { value: validatedData.value },
+        create: {
           tenantId,
-          key
+          key: validatedData.key,
+          value: validatedData.value
         }
-      },
-      update: { value },
-      create: {
-        tenantId,
-        key,
-        value
-      }
-    });
+      });
 
-    return NextResponse.json(setting);
+      await AuditService.logActivity(tenantId, user.id, user.username, `Updated System Setting: ${setting.key}`);
+
+      return NextResponse.json(setting);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return NextResponse.json({ error: error.issues }, { status: 400 });
+      }
+      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
   });
 }

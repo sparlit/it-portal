@@ -1,12 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { withTenant } from '@/lib/api-middleware';
+import { withRBAC } from '@/lib/api-middleware';
+import { AuditService } from '@/services/AuditService';
+import { z } from 'zod';
+
+const TicketUpdateSchema = z.object({
+  status: z.string().optional(),
+  priority: z.enum(['low', 'medium', 'high']).optional(),
+  resolution: z.string().optional().nullable(),
+});
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  return withTenant(request, async (tenantId: string) => {
+  return withRBAC(request, 'read', 'LaundryTicket', async (tenantId) => {
     const ticket = await prisma.laundryTicket.findFirst({
       where: {
         id: params.id,
@@ -29,33 +37,28 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  return withTenant(request, async (tenantId: string) => {
-    const body = await request.json();
+  return withRBAC(request, 'manage', 'LaundryTicket', async (tenantId, user) => {
+    try {
+      const body = await request.json();
+      const validatedData = TicketUpdateSchema.parse(body);
 
-    const ticket = await prisma.laundryTicket.updateMany({
-      where: {
-        id: params.id,
-        tenantId
-      },
-      data: {
-        subject: body.subject,
-        message: body.message,
-        status: body.status,
-        priority: body.priority,
-        type: body.type,
-        resolution: body.resolution
+      const ticket = await prisma.laundryTicket.update({
+        where: {
+          id: params.id,
+          tenantId
+        },
+        data: validatedData
+      });
+
+      await AuditService.logActivity(tenantId, user.id, user.username, `Updated Laundry Ticket: ${ticket.ticketId}`);
+
+      return NextResponse.json(ticket);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return NextResponse.json({ error: error.issues }, { status: 400 });
       }
-    });
-
-    if (ticket.count === 0) {
       return NextResponse.json({ error: 'Ticket not found' }, { status: 404 });
     }
-
-    const updatedTicket = await prisma.laundryTicket.findUnique({
-      where: { id: params.id }
-    });
-
-    return NextResponse.json(updatedTicket);
   });
 }
 
@@ -63,18 +66,20 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  return withTenant(request, async (tenantId: string) => {
-    const result = await prisma.laundryTicket.deleteMany({
-      where: {
-        id: params.id,
-        tenantId
-      }
-    });
+  return withRBAC(request, 'manage', 'LaundryTicket', async (tenantId, user) => {
+    try {
+      const ticket = await prisma.laundryTicket.delete({
+        where: {
+          id: params.id,
+          tenantId
+        }
+      });
 
-    if (result.count === 0) {
+      await AuditService.logActivity(tenantId, user.id, user.username, `Deleted Laundry Ticket: ${ticket.ticketId}`);
+
+      return NextResponse.json({ message: 'Ticket deleted successfully' });
+    } catch (error) {
       return NextResponse.json({ error: 'Ticket not found' }, { status: 404 });
     }
-
-    return NextResponse.json({ message: 'Ticket deleted successfully' });
   });
 }

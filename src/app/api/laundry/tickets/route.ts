@@ -1,6 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { withTenant } from '@/lib/api-middleware';
+import { withRBAC } from '@/lib/api-middleware';
+import { AuditService } from '@/services/AuditService';
+import { z } from 'zod';
+
+const TicketSchema = z.object({
+  customerId: z.string().min(1),
+  orderId: z.string().optional().nullable(),
+  subject: z.string().min(1),
+  message: z.string().min(1),
+  priority: z.enum(['low', 'medium', 'high']).default('medium'),
+  type: z.enum(['complaint', 'feedback', 'inquiry']).default('complaint'),
+});
 
 function generateTicketNumber(): string {
   const date = new Date();
@@ -8,7 +19,7 @@ function generateTicketNumber(): string {
 }
 
 export async function GET(request: NextRequest) {
-  return withTenant(request, async (tenantId: string) => {
+  return withRBAC(request, 'read', 'LaundryTicket', async (tenantId) => {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
     const customerId = searchParams.get('customerId');
@@ -32,27 +43,28 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  return withTenant(request, async (tenantId: string) => {
-    const body = await request.json();
+  return withRBAC(request, 'manage', 'LaundryTicket', async (tenantId, user) => {
+    try {
+      const body = await request.json();
+      const validatedData = TicketSchema.parse(body);
 
-    if (!body.customerId || !body.subject || !body.message) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-    }
+      const ticket = await prisma.laundryTicket.create({
+        data: {
+          tenantId,
+          ticketId: generateTicketNumber(),
+          ...validatedData,
+          status: 'open'
+        }
+      });
 
-    const ticket = await prisma.laundryTicket.create({
-      data: {
-        tenantId,
-        ticketId: generateTicketNumber(),
-        customerId: body.customerId,
-        orderId: body.orderId,
-        subject: body.subject,
-        message: body.message,
-        priority: body.priority || 'medium',
-        type: body.type || 'complaint',
-        status: 'open'
+      await AuditService.logActivity(tenantId, user.id, user.username, `Created Laundry Ticket: ${ticket.ticketId}`);
+
+      return NextResponse.json(ticket, { status: 201 });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return NextResponse.json({ error: error.issues }, { status: 400 });
       }
-    });
-
-    return NextResponse.json(ticket, { status: 201 });
+      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
   });
 }
