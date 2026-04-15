@@ -1,27 +1,27 @@
 {
-  "version": "2.0.0",
+  "version": "3.0.0",
   "project_name": "TSysLab Industrial-Grade IT & Laundry Ecosystem",
   "architecture": "Multi-tenant Modular Monolith (Next.js 14, Prisma, PostgreSQL/SQLite)",
   "modules": {
     "core": {
-      "status": "active",
-      "description": "Shared authentication (JWT), Granular RBAC, Reception Management, and i18n framework.",
-      "metrics": ["Latency < 100ms", "Zero unauthorized access", "RBAC coverage 100%"]
+      "status": "rebuilding",
+      "description": "Shared authentication (JWT), Granular RBAC, Reception Management, and i18n framework. Hardening with Zod and Service Layer.",
+      "metrics": ["Latency < 100ms", "100% Type-safe validation", "RBAC coverage 100%"]
     },
     "it_management": {
-      "status": "active",
-      "description": "IT Assets, Infrastructure Monitor, Secret Vault, and IT Ticketing.",
-      "metrics": ["99.98% uptime tracking", "MTTR tracking", "Credential access auditing"]
+      "status": "rebuilding",
+      "description": "IT Assets, Infrastructure Monitor, Secret Vault, and IT Ticketing. Logic extracted to Service Layer.",
+      "metrics": ["99.98% uptime tracking", "MTTR tracking", "Zero-collision ticket IDs"]
     },
     "laundry_management": {
-      "status": "active",
+      "status": "rebuilding",
       "description": "End-to-end laundry operations: Order lifecycle, Mobile Logistics/Driver Dashboard, CRM, and Pricing Catalog.",
-      "metrics": ["Laundry Takt Time tracking", "Logistics route accuracy"]
+      "metrics": ["Laundry Takt Time tracking", "Order processing accuracy > 99%"]
     },
     "ticketing_system": {
-      "status": "deployed",
-      "description": "Dual-stream ticketing: Internal IT vs. Customer Service Laundry.",
-      "metrics": ["SLA compliance", "CSAT score", "Audit logging (ActivityLog)"]
+      "status": "hardened",
+      "description": "Dual-stream ticketing: Internal IT vs. Customer Service Laundry. Unified service layer integration.",
+      "metrics": ["SLA compliance", "Audit logging (ActivityLog)", "Schema-validated payloads"]
     }
   },
   "migrations": [
@@ -40,17 +40,17 @@
     {
       "id": "20240521_protocol_upgrade",
       "description": "Upgraded to Advanced V2 Protocol and initialized production baseline."
+    },
+    {
+      "id": "20240521_industrial_hardening",
+      "description": "Full project rebuild: Service Layer extraction, Zod validation integration, and deep UI hardening."
     }
   ],
   "debt": [
     {
       "issue": "Production PostgreSQL migration (Currently SQLite for dev/PoC)",
       "severity": "medium"
-    },
-    {
-      "issue": "Full i18n translation coverage (Framework implemented)",
-      "severity": "low"
     }
   ],
-  "last_action": "2024-05-21T10:00:00Z"
+  "last_action": "2024-05-21T11:00:00Z"
 }

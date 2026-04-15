@@ -1,15 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
 import { withRBAC } from '@/lib/api-middleware';
+import { TicketingService } from '@/services/TicketingService';
+import { prisma } from '@/lib/db';
+import { z } from 'zod';
 
-import { v4 as uuidv4 } from 'uuid';
-
-function generateTicketNumber(): string {
-  const date = new Date();
-  const prefix = `TKT-CS-${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}`;
-  const random = uuidv4().split('-')[0].toUpperCase();
-  return `${prefix}-${random}`;
-}
+const TicketSchema = z.object({
+  customerId: z.string().min(1),
+  subject: z.string().min(1),
+  message: z.string().min(1),
+  orderId: z.string().optional(),
+  priority: z.string().optional(),
+  type: z.string().optional()
+});
 
 export async function GET(request: NextRequest) {
   return withRBAC(request, 'read', 'LaundryTicket', async (tenantId: string) => {
@@ -37,35 +39,18 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   return withRBAC(request, 'create', 'LaundryTicket', async (tenantId: string, user: any) => {
-    const body = await request.json();
+    try {
+      const body = await request.json();
+      const result = TicketSchema.safeParse(body);
 
-    if (!body.customerId || !body.subject || !body.message) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      if (!result.success) {
+        return NextResponse.json({ error: result.error.flatten() }, { status: 400 });
+      }
+
+      const ticket = await TicketingService.createLaundryTicket(tenantId, result.data, user);
+      return NextResponse.json(ticket, { status: 201 });
+    } catch (error) {
+      return NextResponse.json({ error: 'Failed to create laundry ticket' }, { status: 500 });
     }
-
-    const ticket = await prisma.laundryTicket.create({
-      data: {
-        tenantId,
-        ticketId: generateTicketNumber(),
-        customerId: body.customerId,
-        orderId: body.orderId,
-        subject: body.subject,
-        message: body.message,
-        priority: body.priority || 'medium',
-        type: body.type || 'complaint',
-        status: 'open'
-      }
-    });
-
-    // Production-Standard: Audit Logging
-    await prisma.activityLog.create({
-      data: {
-        tenantId,
-        user: user?.name || 'System',
-        action: `Created Laundry Ticket ${ticket.ticketId}: ${ticket.subject}`
-      }
-    });
-
-    return NextResponse.json(ticket, { status: 201 });
   });
 }

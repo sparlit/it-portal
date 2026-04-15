@@ -35,7 +35,7 @@ export function GlobalMetrics() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-extrabold">{metrics?.summary?.totalOrders || 0}</div>
-            <p className="text-[10px] font-bold text-green-400 mt-1 uppercase tracking-tighter">+12% vs last week</p>
+            <p className="text-[10px] font-bold text-green-400 mt-1 uppercase tracking-tighter">Live Order Stream</p>
           </CardContent>
         </Card>
 
@@ -84,20 +84,26 @@ export function GlobalMetrics() {
             <div className="flex items-center justify-between gap-12">
               <div className="flex-1 space-y-2">
                 <div className="flex justify-between text-xs font-bold uppercase tracking-widest text-slate-500">
-                  <span>Infrastructure Availability</span>
-                  <span>99.9%</span>
+                  <span>IT Asset Health</span>
+                  <span>{metrics?.kpis?.itAssetHealth || '100%'}</span>
                 </div>
                 <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-green-500 w-[99.9%]" />
+                  <div
+                    className="h-full bg-green-500 transition-all duration-500"
+                    style={{ width: metrics?.kpis?.itAssetHealth || '100%' }}
+                  />
                 </div>
               </div>
               <div className="flex-1 space-y-2">
                 <div className="flex justify-between text-xs font-bold uppercase tracking-widest text-slate-500">
-                  <span>Garment Quality Rate</span>
-                  <span>98.2%</span>
+                  <span>SLA Adherence</span>
+                  <span>{metrics?.kpis?.slaCompliance || '100%'}</span>
                 </div>
                 <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-blue-500 w-[98.2%]" />
+                  <div
+                    className="h-full bg-blue-500 transition-all duration-500"
+                    style={{ width: metrics?.kpis?.slaCompliance || '100%' }}
+                  />
                 </div>
               </div>
             </div>

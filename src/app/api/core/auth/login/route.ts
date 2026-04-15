@@ -2,14 +2,23 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import { encrypt } from '@/lib/auth';
+import { z } from 'zod';
+
+const LoginSchema = z.object({
+  username: z.string().min(1),
+  password: z.string().min(1)
+});
 
 export async function POST(request: NextRequest) {
   try {
-    const { username, password } = await request.json();
+    const body = await request.json();
+    const result = LoginSchema.safeParse(body);
 
-    if (!username || !password) {
+    if (!result.success) {
       return NextResponse.json({ error: 'Username and password are required' }, { status: 400 });
     }
+
+    const { username, password } = result.data;
 
     const user = await prisma.user.findFirst({
       where: {
@@ -25,7 +34,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
-    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
     const session = await encrypt({
       user: {
         id: user.id,

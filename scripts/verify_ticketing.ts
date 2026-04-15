@@ -19,7 +19,7 @@ async function verify() {
   const ticket = await prisma.iTTicket.create({
     data: {
       tenantId,
-      ticketId: 'TKT-VERIFY-001',
+      ticketId: 'TKT-VERIFY-002',
       title: 'Verification Ticket',
       requester: 'Verification Bot',
       status: 'open'

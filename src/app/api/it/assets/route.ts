@@ -1,42 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
 import { withTenant } from '@/lib/api-middleware';
+import { AssetService } from '@/services/AssetService';
+import { z } from 'zod';
+
+const AssetSchema = z.object({
+  name: z.string().min(1),
+  type: z.string().min(1),
+  serialNumber: z.string().min(1),
+  model: z.string().optional(),
+  location: z.string().optional(),
+  ipAddress: z.string().optional(),
+  status: z.string().optional(),
+  assignedTo: z.string().optional(),
+  purchaseDate: z.string().optional(),
+  warrantyEnd: z.string().optional(),
+  notes: z.string().optional()
+});
 
 export async function GET(request: NextRequest) {
   return withTenant(request, async (tenantId: string) => {
-    const assets = await prisma.asset.findMany({
-      where: { tenantId },
-      orderBy: { updatedAt: 'desc' }
-    });
+    const assets = await AssetService.listAssets(tenantId);
     return NextResponse.json(assets);
   });
 }
 
 export async function POST(request: NextRequest) {
   return withTenant(request, async (tenantId: string) => {
-    const body = await request.json();
+    try {
+      const body = await request.json();
+      const result = AssetSchema.safeParse(body);
 
-    if (!body.name || !body.serialNumber || !body.type) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-    }
-
-    const asset = await prisma.asset.create({
-      data: {
-        tenantId,
-        name: body.name,
-        type: body.type,
-        model: body.model || 'Unknown',
-        serialNumber: body.serialNumber,
-        location: body.location || 'Default',
-        ipAddress: body.ipAddress,
-        status: body.status || 'active',
-        assignedTo: body.assignedTo,
-        purchaseDate: body.purchaseDate,
-        warrantyEnd: body.warrantyEnd,
-        notes: body.notes
+      if (!result.success) {
+        return NextResponse.json({ error: result.error.flatten() }, { status: 400 });
       }
-    });
 
-    return NextResponse.json(asset, { status: 201 });
+      const asset = await AssetService.createAsset(tenantId, result.data);
+      return NextResponse.json(asset, { status: 201 });
+    } catch (error) {
+      return NextResponse.json({ error: 'Failed to process request' }, { status: 500 });
+    }
   });
 }
