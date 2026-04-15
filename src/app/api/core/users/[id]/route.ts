@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { withTenant } from '@/lib/api-middleware';
+import { withRBAC } from '@/lib/api-middleware';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  return withTenant(request, async (tenantId: string) => {
+  return withRBAC(request, 'read', 'User', async (tenantId: string) => {
     const user = await prisma.user.findFirst({
       where: {
         id: params.id,
@@ -35,7 +35,7 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  return withTenant(request, async (tenantId: string) => {
+  return withRBAC(request, 'manage', 'User', async (tenantId: string) => {
     const body = await request.json();
 
     const user = await prisma.user.updateMany({

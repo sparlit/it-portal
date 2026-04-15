@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { withTenant } from '@/lib/api-middleware';
+import { withRBAC } from '@/lib/api-middleware';
 import bcrypt from 'bcryptjs';
 
 export async function GET(request: NextRequest) {
-  return withTenant(request, async (tenantId: string) => {
+  return withRBAC(request, 'read', 'User', async (tenantId: string) => {
     const users = await prisma.user.findMany({
       where: { tenantId },
       select: {
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  return withTenant(request, async (tenantId: string) => {
+  return withRBAC(request, 'manage', 'User', async (tenantId: string) => {
     const body = await request.json();
     const { username, password, name, email, role } = body;
 
