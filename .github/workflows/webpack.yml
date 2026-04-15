@@ -26,4 +26,4 @@ jobs:
       run: |
         npm install
         npm audit fix --force
-        npm --yes webpack
+        npm --yes webpack --mode production
