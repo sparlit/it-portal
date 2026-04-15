@@ -4,6 +4,8 @@ import { LaundryTicketDashboard } from '@/components/modules/laundry/LaundryTick
 import { LaundryOrderManager } from '@/components/modules/laundry/LaundryOrderManager'
 import { LaundryCustomerManager } from '@/components/modules/laundry/LaundryCustomerManager'
 import { ServicePricing } from '@/components/modules/laundry/ServicePricing'
+import { DriverScheduling } from '@/components/modules/laundry/DriverScheduling'
+import { RequisitionManager } from '@/components/shared/procurement/RequisitionManager'
 import { GlobalMetrics } from '@/components/modules/core/GlobalMetrics'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
@@ -53,6 +55,8 @@ export default function LaundryPortal() {
               <TabsTrigger value="laundry-crm" className="border font-bold">{t('customers')}</TabsTrigger>
               <TabsTrigger value="laundry-pricing" className="border font-bold">{t('pricing')}</TabsTrigger>
               <TabsTrigger value="laundry-cs" className="border font-bold">{t('laundry_cs')}</TabsTrigger>
+              <TabsTrigger value="laundry-logistics" className="border font-bold">Logistics & Drivers</TabsTrigger>
+              <TabsTrigger value="indent" className="border font-bold">Procurement Indent</TabsTrigger>
               <TabsTrigger value="analytics" className="border font-bold">{t('analytics')}</TabsTrigger>
             </TabsList>
           </div>
@@ -71,6 +75,14 @@ export default function LaundryPortal() {
 
           <TabsContent value="laundry-cs">
             <LaundryTicketDashboard />
+          </TabsContent>
+
+          <TabsContent value="laundry-logistics">
+            <DriverScheduling />
+          </TabsContent>
+
+          <TabsContent value="indent">
+            <RequisitionManager />
           </TabsContent>
 
           <TabsContent value="analytics">

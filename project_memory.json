@@ -1,71 +1,60 @@
 {
-  "version": "1.5.0",
-  "project_name": "TSysLab Industrial-Grade IT & Laundry Ecosystem",
+  "version": "2.0.0",
+  "project_name": "Artemis Industrial-Grade Multi-Portal Ecosystem",
+  "status": "In Development",
+  "last_updated": "2024-05-21T12:00:00Z",
+  "architectural_principles": [
+    "PostgreSQL-first architecture",
+    "100% Free and Open Source Tools (FOSS)",
+    "Multi-tenant Modular Monolith",
+    "Granular RBAC with Portal-based permissions",
+    "Cross-departmental data linkage and workflows",
+    "Individual branding per portal and per user",
+    "Multi-level approval workflows for procurement"
+  ],
   "modules": {
     "core": {
-      "status": "active",
-      "location": "/core",
-      "description": "Shared authentication (JWT), RBAC, i18n, and Audit logging.",
-      "metrics": {
-        "latency": "< 100ms",
-        "rbac_coverage": "100%",
-        "uptime": "99.98%"
-      }
+      "status": "expanding",
+      "description": "Unified authentication and permission management. Portal-specific login pages."
     },
-    "landing_page": {
-      "status": "active",
-      "location": "/frontend/landing",
-      "description": "Modern front door for Al Rayes Laundry; gateways to IT and Laundry portals.",
-      "metrics": {
-        "LCP": "< 2.5s",
-        "CLS": "< 0.1",
-        "TBT": "< 300ms",
-        "accessibility": "WCAG 2.1 AA"
-      }
+    "admin": {
+      "status": "planned",
+      "description": "SuperAdmin system portal for user and credential management."
     },
-    "it_portal": {
+    "it": {
       "status": "active",
-      "location": "/portal-it",
-      "description": "Asset Management, Infra Monitor, Secret Vault, and Ticketing.",
-      "metrics": {
-        "MTTR": "Tracking",
-        "unhandled_exceptions": "0"
-      }
+      "enhancements": ["Knowledge Base", "Network Mapping", "Budget Tracking"]
     },
-    "laundry_portal": {
+    "laundry": {
       "status": "active",
-      "location": "/portal-laundry",
-      "description": "Order Lifecycle, Driver Logistics, CRM, and Pricing.",
-      "metrics": {
-        "takt_time": "Real-time tracking",
-        "order_success_rate": "95%"
-      }
+      "enhancements": ["Driver Scheduling", "Refined Order Tracking", "RFID/Barcode Simulation"]
     },
-    "database": {
-      "status": "active",
-      "location": "/database",
-      "description": "Multi-tenant PostgreSQL/SQLite schemas and migrations."
+    "crm_sales": {
+      "status": "planned",
+      "description": "Customer 360, Leads, Sales Pipeline, Marketing."
+    },
+    "maintenance": {
+      "status": "planned",
+      "description": "Work Orders, Preventive Maintenance, Spare Parts."
+    },
+    "stores_purchase": {
+      "status": "planned",
+      "description": "Inventory, Re-order management, Multi-level procurement approvals."
+    },
+    "transport": {
+      "status": "planned",
+      "description": "Live tracking (OSM), Route optimization, Driver logs, Fleet maintenance."
+    },
+    "production": {
+      "status": "planned",
+      "description": "Batch tracking, QC Checkpoints, Process monitoring."
     }
   },
-  "migrations": [
-    {
-      "id": "20240520_landing_page_rebuild",
-      "description": "Reconfiguring architecture for landing-page-driven entry points."
-    },
-    {
-      "id": "20240521_enhanced_v2_protocol",
-      "description": "Upgrading system to Enhanced V2 protocol with persistent memory."
-    },
-    {
-      "id": "20240521_modular_reorganization",
-      "description": "Established modular boundaries and consolidated documentation into /docs."
-    }
-  ],
-  "debt": [
-    {
-      "issue": "Production PostgreSQL migration",
-      "severity": "medium"
-    }
-  ],
-  "last_action": "2024-05-21T10:30:00Z"
+  "requirements_summary": {
+    "authentication": "Unified identity, portal-based permissions, unique login designs per portal.",
+    "branding": "Dynamic themes per user, optional persistence, unique color schemes per portal.",
+    "integration": "All data linked for global dashboards and cross-departmental indents.",
+    "licensing": "Strictly 100% free and open-source libraries and tools."
+  },
+  "last_action": "Established plan for system-wide expansion and migrated to PostgreSQL schema design."
 }

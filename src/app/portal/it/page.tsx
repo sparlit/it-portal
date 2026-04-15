@@ -4,6 +4,8 @@ import { ITTicketDashboard } from '@/components/modules/it/ITTicketDashboard'
 import { AssetInventory } from '@/components/modules/it/AssetInventory'
 import { InfrastructureMonitor } from '@/components/modules/it/InfrastructureMonitor'
 import { SecretVault } from '@/components/modules/it/SecretVault'
+import { KnowledgeBase } from '@/components/modules/it/KnowledgeBase'
+import { RequisitionManager } from '@/components/shared/procurement/RequisitionManager'
 import { GlobalMetrics } from '@/components/modules/core/GlobalMetrics'
 import { ReceptionDesk } from '@/components/modules/core/ReceptionDesk'
 import { AuditTrail } from '@/components/modules/core/AuditTrail'
@@ -58,6 +60,8 @@ export default function ITPortal() {
               <TabsTrigger value="it-infra" className="border font-bold">{t('it_infra')}</TabsTrigger>
               <TabsTrigger value="it-tickets" className="border font-bold">{t('it_support')}</TabsTrigger>
               <TabsTrigger value="it-vault" className="border font-bold">{t('it_vault')}</TabsTrigger>
+              <TabsTrigger value="it-kb" className="border font-bold">Knowledge Base</TabsTrigger>
+              <TabsTrigger value="indent" className="border font-bold">Procurement Indent</TabsTrigger>
             </TabsList>
           </div>
 
@@ -87,6 +91,14 @@ export default function ITPortal() {
 
           <TabsContent value="it-vault">
             <SecretVault />
+          </TabsContent>
+
+          <TabsContent value="it-kb">
+            <KnowledgeBase />
+          </TabsContent>
+
+          <TabsContent value="indent">
+            <RequisitionManager />
           </TabsContent>
         </Tabs>
       </div>
