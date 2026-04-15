@@ -1,6 +1,6 @@
 #!/bin/bash
 # IT Portal Deployment Script
-# For Al Rayes Laundry - IT Management Portal
+# For Artemis Laundry - IT Management Portal
 
 set -e
 

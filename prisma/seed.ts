@@ -51,10 +51,11 @@ async function main() {
     }
   })
 
-  await prisma.iTTicket.create({
+  await prisma.ticket.create({
     data: {
       tenantId: tenant.id,
       ticketId: 'TKT-IT-001',
+      module: 'IT',
       title: 'Server Migration',
       requester: 'Admin',
       priority: 'high',
@@ -62,13 +63,14 @@ async function main() {
     }
   })
 
-  await prisma.laundryTicket.create({
+  await prisma.ticket.create({
     data: {
       tenantId: tenant.id,
       ticketId: 'TKT-CS-001',
-      customerId: customer.id,
-      subject: 'Delayed Delivery',
-      message: 'My order is 2 days late.',
+      module: 'LAUNDRY',
+      title: 'Delayed Delivery',
+      description: 'My order is 2 days late.',
+      requester: customer.name,
       priority: 'medium',
       status: 'open'
     }

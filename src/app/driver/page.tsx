@@ -15,7 +15,7 @@ export default function DriverDashboard() {
   useEffect(() => {
     async function fetchDeliveries() {
       try {
-        const response = await fetch('/api/laundry/orders?status=ready')
+        const response = await fetch('/api/orders?status=ready')
         const data = await response.json()
         if (Array.isArray(data)) {
           setDeliveries(data)
@@ -31,7 +31,7 @@ export default function DriverDashboard() {
 
   const updateStatus = async (orderId: string, status: string) => {
     try {
-      await fetch(`/api/laundry/orders/${orderId}/status`, {
+      await fetch(`/api/orders/${orderId}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status })

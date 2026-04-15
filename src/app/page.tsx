@@ -43,7 +43,7 @@ export default function LandingPage() {
             <div className="bg-blue-600 p-1.5 rounded-lg shadow-lg shadow-blue-500/20">
               <ShieldCheck className="h-6 w-6 text-white" />
             </div>
-            <span className="text-xl font-black tracking-tighter uppercase dark:text-white">Al Rayes</span>
+            <span className="text-xl font-black tracking-tighter uppercase dark:text-white">Artemis</span>
           </div>
 
           <div className="flex items-center gap-4">
@@ -103,7 +103,7 @@ export default function LandingPage() {
                   <div className={`p-5 rounded-2xl ${portal.name.includes('IT') ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900' : 'bg-blue-600 text-white'} shadow-xl`}>
                     {getIcon(portal.icon)}
                   </div>
-                  <Badge variant="secondary" className="font-bold px-3 py-1 bg-white dark:bg-slate-800 shadow-sm">Enterprise Active</Badge>
+                  <Badge variant="secondary" className="font-bold px-3 py-1 bg-white dark:bg-slate-800 shadow-sm">Artemis Active</Badge>
                 </div>
                 <CardTitle className="text-4xl font-black tracking-tight dark:text-white">{portal.name}</CardTitle>
                 <CardDescription className="text-xl font-medium mt-4 leading-relaxed text-slate-600 dark:text-slate-400">
@@ -184,7 +184,7 @@ export default function LandingPage() {
             <ShieldCheck className="h-6 w-6 text-blue-600" />
             <span className="font-black tracking-tighter uppercase">TSysLab Industrial</span>
           </div>
-          <p className="text-slate-500 text-sm font-bold order-3 md:order-2">© 2024 Al Rayes Laundry & Dry Cleaning. Qatar.</p>
+          <p className="text-slate-500 text-sm font-bold order-3 md:order-2">© 2024 Artemis Laundry & Dry Cleaning. Qatar.</p>
           <div className="flex gap-10 order-2 md:order-3">
             <Link href="#" className="text-sm font-bold hover:text-blue-600 transition-colors">Infrastructure Status</Link>
             <Link href="#" className="text-sm font-bold hover:text-blue-600 transition-colors">Governance</Link>

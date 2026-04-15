@@ -1,7 +1,7 @@
 {
   "name": "it-management-portal",
   "version": "1.0.0",
-  "description": "IT Management Portal for Al Rayes Laundry, Doha, Qatar",
+  "description": "IT Management Portal for Artemis Laundry, Doha, Qatar",
   "private": true,
   "scripts": {
     "dev": "next dev",

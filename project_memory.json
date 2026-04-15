@@ -1,62 +1,51 @@
 {
-  "version": "1.7.0",
-  "project_name": "TSysLab Industrial-Grade IT & Laundry Ecosystem",
+  "version": "2.0.0",
+  "project_name": "Artemis Industrial-Grade IT & Laundry Ecosystem",
   "modules": {
     "core": {
       "status": "active",
       "location": "/core",
-      "description": "Shared authentication (JWT), RBAC, i18n, and Audit logging.",
+      "description": "Shared authentication, RBAC, i18n, and Audit logging.",
       "metrics": {
         "latency": "< 100ms",
-        "rbac_coverage": "100%",
-        "uptime": "99.98%"
+        "rbac_coverage": "100%"
       }
     },
-    "landing_page": {
-      "status": "active",
-      "location": "/frontend/landing",
-      "description": "Modern front door for Al Rayes Laundry; gateways to IT and Laundry portals.",
+    "ticketing": {
+      "status": "initializing",
+      "location": "/ticketing",
+      "description": "Unified IT & Laundry Ticketing with SLA and Escalation logic.",
       "metrics": {
-        "LCP": "< 2.5s",
-        "CLS": "< 0.1",
-        "TBT": "< 300ms",
-        "accessibility": "WCAG 2.1 AA"
+        "MTTR": "Targeting < 4h",
+        "sla_compliance": "99%"
       }
     },
-    "it_portal": {
+    "inventory": {
       "status": "active",
-      "location": "/portal-it",
-      "description": "Asset Management, Infra Monitor, Secret Vault, and Ticketing.",
+      "location": "/inventory",
+      "description": "Cross-module Asset and Stock management.",
       "metrics": {
-        "MTTR": "Tracking",
-        "unhandled_exceptions": "0"
-      }
-    },
-    "laundry_portal": {
-      "status": "active",
-      "location": "/portal-laundry",
-      "description": "Order Lifecycle, Driver Logistics, CRM, and Pricing.",
-      "metrics": {
-        "takt_time": "Real-time tracking",
-        "order_success_rate": "95%"
+        "inventory_accuracy": "100%"
       }
     },
     "database": {
       "status": "active",
       "location": "/database",
-      "description": "Multi-tenant PostgreSQL standards with specialized Windows dev stage support."
+      "description": "Multi-tenant PostgreSQL with RLS and Audit triggers."
     }
   },
   "migrations": [
     {
-      "id": "20240521_postgresql_and_cross_platform",
-      "description": "Transitioned to PostgreSQL and implemented universal OS support via Docker."
-    },
-    {
-      "id": "20240521_windows_dev_optimization",
-      "description": "Optimized environment for Windows-first development stage with PowerShell automation."
+      "id": "20240521_v2_protocol_initialization",
+      "description": "Transitioned to Advanced V2 Protocol, hardening memory schema and modular decoupling."
     }
   ],
-  "debt": [],
-  "last_action": "2024-05-21T14:00:00Z"
+  "debt": [
+    {
+      "id": "DEBT-001",
+      "description": "Legacy /portal-it and /portal-laundry paths need normalization to modular structure.",
+      "severity": "medium"
+    }
+  ],
+  "last_action": "2024-05-21T14:30:00Z"
 }

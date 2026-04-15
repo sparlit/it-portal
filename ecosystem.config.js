@@ -1,5 +1,5 @@
 // PM2 Ecosystem Configuration for IT Portal
-// Al Rayes Laundry - IT Management Portal
+// Artemis Laundry - IT Management Portal
 
 module.exports = {
   apps: [
@@ -15,7 +15,7 @@ module.exports = {
         NODE_ENV: 'production',
         PORT: 3000,
         DATABASE_URL: 'postgresql://portal_user:Portal@123!@localhost:5432/it_portal?schema=public',
-        NEXTAUTH_SECRET: 'it-portal-secret-key-2024-alrayes-qatar',
+        NEXTAUTH_SECRET: 'it-portal-secret-key-2024-industrial-qatar',
         NEXTAUTH_URL: 'http://172.16.1.95'
       },
       error_file: '/var/log/it-portal/error.log',

@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { withTenant } from '@/lib/api-middleware';
+import { withRBAC } from '@/lib/api-middleware';
 
 export async function GET(request: NextRequest) {
-  return withTenant(request, async (tenantId: string) => {
+  return withRBAC(request, 'read', 'Setting', async (tenantId: string) => {
     const settings = await prisma.setting.findMany({
       where: { tenantId }
     });
@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  return withTenant(request, async (tenantId: string) => {
+  return withRBAC(request, 'read', 'Setting', async (tenantId: string) => {
     const body = await request.json();
     const { key, value } = body;
 

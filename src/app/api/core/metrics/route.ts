@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
       activeUsers
     ] = await Promise.all([
       prisma.laundryOrder.count({ where: { tenantId } }),
-      prisma.iTTicket.count({ where: { tenantId, status: 'open' } }),
+      prisma.ticket.count({ where: { tenantId, status: 'open' } }),
       prisma.asset.count({ where: { tenantId, status: 'active' } }),
       prisma.user.count({ where: { tenantId, status: 'active' } })
     ]);

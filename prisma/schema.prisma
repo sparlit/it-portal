@@ -1,5 +1,5 @@
 // Production-Grade Multi-tenant Prisma Schema (PostgreSQL)
-// TSysLab Industrial-Grade IT & Laundry Ecosystem
+// TSysLab Industrial-Grade IT & Laundry Ecosystem - Advanced V2
 
 generator client {
   provider = "prisma-client-js"
@@ -30,13 +30,13 @@ model Tenant {
   // Relations
   users             User[]
   assets            Asset[]
-  itTickets         ITTicket[]
-  laundryTickets    LaundryTicket[]
+  tickets           Ticket[]
   laundryCustomers  LaundryCustomer[]
   laundryOrders     LaundryOrder[]
   laundryServices   LaundryService[]
   laundrySuppliers  LaundrySupplier[]
   laundryEquipment  LaundryEquipment[]
+  inventoryItems    InventoryItem[]
   visitors          Visitor[]
   meetings          Meeting[]
   licenses          License[]
@@ -54,6 +54,7 @@ model Tenant {
   systemAlerts      SystemAlert[]
   settings          Setting[]
   serverMonitors    ServerMonitor[]
+  systemMetrics     SystemMetric[]
 }
 
 model User {
@@ -62,7 +63,7 @@ model User {
   password  String
   name      String
   email     String?
-  role      String   @default("user")
+  role      String   @default("user") // admin, operator, technician, driver
   status    String   @default("active")
 
   tenantId  String
@@ -75,15 +76,78 @@ model User {
 }
 
 // ==========================================
-// IT MANAGEMENT MODULE
+// UNIFIED TICKETING MODULE
 // ==========================================
+
+model Ticket {
+  id          String   @id @default(cuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+
+  ticketId    String   // Human readable ID (e.g., TKT-1001)
+  module      String   // "IT" or "LAUNDRY"
+  title       String
+  description String?  @db.Text
+  priority    String   @default("medium") // low, medium, high, critical
+  status      String   @default("open")   // open, in_progress, resolved, closed
+  category    String?
+
+  requesterId String?
+  requester   String   // Name of requester
+  assignedTo  String?  // Name or ID of technician
+
+  resolution  String?  @db.Text
+
+  // SLA & Escalation
+  slaDeadline    DateTime?
+  escalationLevel Int       @default(0)
+  lastEscalatedAt DateTime?
+
+  // Links
+  assetId     String?
+  orderId     String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([tenantId, ticketId])
+  @@index([tenantId, module])
+  @@index([status])
+}
+
+// ==========================================
+// INVENTORY & ASSET MODULE
+// ==========================================
+
+model InventoryItem {
+  id            String   @id @default(cuid())
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+
+  sku           String?
+  name          String
+  description   String?  @db.Text
+  category      String   // "IT", "CHEMICALS", "PACKAGING", "UNIFORMS"
+  quantity      Float    @default(0)
+  unit          String   @default("pcs")
+  minThreshold  Float    @default(5)
+  location      String?
+
+  supplierId    String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([tenantId, sku])
+  @@index([tenantId, category])
+}
 
 model Asset {
   id            String   @id @default(cuid())
   tenantId      String
   tenant        Tenant   @relation(fields: [tenantId], references: [id])
 
-  type          String
+  type          String   // Laptop, Server, Router, etc.
   name          String
   model         String
   serialNumber  String
@@ -91,8 +155,8 @@ model Asset {
   ipAddress     String?
   status        String   @default("active")
   assignedTo    String?
-  purchaseDate  String?
-  warrantyEnd   String?
+  purchaseDate  DateTime?
+  warrantyEnd   DateTime?
   notes         String?  @db.Text
   
   createdAt     DateTime @default(now())
@@ -102,37 +166,14 @@ model Asset {
   @@index([tenantId])
 }
 
-model ITTicket {
-  id          String   @id @default(cuid())
-  tenantId    String
-  tenant      Tenant   @relation(fields: [tenantId], references: [id])
-
-  ticketId    String
-  title       String
-  description String?  @db.Text
-  priority    String   @default("medium")
-  status      String   @default("open")
-  category    String?
-  requester   String
-  assignedTo  String?
-  resolution  String?  @db.Text
-  slaDeadline String?
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@unique([tenantId, ticketId])
-  @@index([tenantId])
-}
-
 // ==========================================
-// LAUNDRY MANAGEMENT MODULE
+// LAUNDRY MANAGEMENT MODULE (REFINED)
 // ==========================================
 
 model LaundryCustomer {
   id          String   @id @default(cuid())
-  tenantId    String
-  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
 
   name        String
   email       String?
@@ -143,7 +184,6 @@ model LaundryCustomer {
   notes       String?  @db.Text
 
   orders      LaundryOrder[]
-  tickets     LaundryTicket[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -160,7 +200,7 @@ model LaundryService {
   category    String
   price       Float
   unit        String   @default("piece")
-  estimatedTime Int    @default(24)
+  estimatedTime Int    @default(24) // Hours
 
   orderItems  LaundryOrderItem[]
   
@@ -179,7 +219,7 @@ model LaundryOrder {
   customerId    String
   customer      LaundryCustomer @relation(fields: [customerId], references: [id])
 
-  status        String   @default("received")
+  status        String   @default("received") // received, cleaning, ready, out_for_delivery, delivered, cancelled
   totalAmount   Float    @default(0)
   paymentStatus String   @default("pending")
 
@@ -251,86 +291,47 @@ model LaundryPayment {
   updatedAt     DateTime @updatedAt
 }
 
-model LaundryTicket {
-  id          String   @id @default(cuid())
-  tenantId    String
-  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+// ==========================================
+// METRICS & AUDIT MODULE
+// ==========================================
 
-  ticketId    String
-  customerId  String
-  customer    LaundryCustomer @relation(fields: [customerId], references: [id])
-
-  orderId     String?
-  subject     String
-  message     String   @db.Text
-  priority    String   @default("medium")
-  status      String   @default("open")
-  type        String   @default("complaint")
-  resolution  String?  @db.Text
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@unique([tenantId, ticketId])
-  @@index([tenantId, customerId])
-}
-
-model LaundrySupplier {
+model ActivityLog {
   id            String   @id @default(cuid())
   tenantId      String
   tenant        Tenant   @relation(fields: [tenantId], references: [id])
   
-  name          String
-  contactPerson String?
-  phone         String?
-  email         String?
-  category      String
-  address       String?  @db.Text
+  userId        String?
+  user          String   // Name or username for quick lookup
+  action        String   // CREATE, UPDATE, DELETE, LOGIN
+  module        String   // TICKETING, INVENTORY, CORE
+  entityId      String?  // ID of the affected record
+  details       String?  @db.Text // JSON string of changes
+  ipAddress     String?
   
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  timestamp     DateTime @default(now())
 
-  @@index([tenantId])
+  @@index([tenantId, module])
+  @@index([timestamp])
 }
 
-model LaundryEquipment {
+model SystemMetric {
   id            String   @id @default(cuid())
   tenantId      String
   tenant        Tenant   @relation(fields: [tenantId], references: [id])
 
-  name          String
-  model         String?
-  serialNumber  String?
-  installationDate DateTime?
-  lastServiceDate DateTime?
-  nextServiceDate DateTime?
-  status        String   @default("operational")
+  metricName    String   // API_LATENCY, CPU_USAGE, MEM_USAGE
+  value         Float
+  unit          String   // ms, %, MB
+  endpoint      String?
   
-  repairs       LaundryRepair[]
+  timestamp     DateTime @default(now())
   
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  @@index([tenantId])
-}
-
-model LaundryRepair {
-  id            String   @id @default(cuid())
-  equipmentId   String
-  equipment     LaundryEquipment @relation(fields: [equipmentId], references: [id])
-
-  description   String   @db.Text
-  cost          Float    @default(0)
-  technician    String?
-  repairDate    DateTime
-  status        String   @default("completed")
-
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  @@index([tenantId, metricName])
+  @@index([timestamp])
 }
 
 // ==========================================
-// SHARED UTILITY MODELS
+// SHARED UTILITY MODELS (MAINTAINED)
 // ==========================================
 
 model Visitor {
@@ -450,16 +451,6 @@ model KnowledgeArticle {
   @@index([tenantId])
 }
 
-model ActivityLog {
-  id            String   @id @default(cuid())
-  tenantId      String
-  tenant        Tenant   @relation(fields: [tenantId], references: [id])
-  user          String
-  action        String
-  timestamp     DateTime @default(now())
-  @@index([tenantId])
-}
-
 model Announcement {
   id            String   @id @default(cuid())
   tenantId      String
@@ -524,5 +515,59 @@ model ServerMonitor {
   ip            String
   status        String   @default("online")
   updatedAt     DateTime @updatedAt
+  @@index([tenantId])
+}
+
+model LaundryEquipment {
+  id            String   @id @default(cuid())
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+
+  name          String
+  model         String?
+  serialNumber  String?
+  installationDate DateTime?
+  lastServiceDate DateTime?
+  nextServiceDate DateTime?
+  status        String   @default("operational")
+
+  repairs       LaundryRepair[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([tenantId])
+}
+
+model LaundryRepair {
+  id            String   @id @default(cuid())
+  equipmentId   String
+  equipment     LaundryEquipment @relation(fields: [equipmentId], references: [id])
+
+  description   String   @db.Text
+  cost          Float    @default(0)
+  technician    String?
+  repairDate    DateTime
+  status        String   @default("completed")
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model LaundrySupplier {
+  id            String   @id @default(cuid())
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+
+  name          String
+  contactPerson String?
+  phone         String?
+  email         String?
+  category      String
+  address       String?  @db.Text
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
   @@index([tenantId])
 }

@@ -1,10 +1,10 @@
 "use client"
 
-import { LaundryTicketDashboard } from '@/components/modules/laundry/LaundryTicketDashboard'
-import { LaundryOrderManager } from '@/components/modules/laundry/LaundryOrderManager'
-import { LaundryCustomerManager } from '@/components/modules/laundry/LaundryCustomerManager'
-import { ServicePricing } from '@/components/modules/laundry/ServicePricing'
-import { GlobalMetrics } from '@/components/modules/core/GlobalMetrics'
+import { LaundryTicketDashboard } from '@/modules/ticketing/laundry/LaundryTicketDashboard'
+import { LaundryOrderManager } from '@/modules/ticketing/laundry/LaundryOrderManager'
+import { LaundryCustomerManager } from '@/modules/ticketing/laundry/LaundryCustomerManager'
+import { ServicePricing } from '@/modules/ticketing/laundry/ServicePricing'
+import { GlobalMetrics } from '@/modules/core/components/GlobalMetrics'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { useI18n } from '@/lib/i18n/context'

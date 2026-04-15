@@ -1,7 +1,7 @@
 {
   "hero": {
     "title": "Industrial Excellence. Precision Care.",
-    "subtitle": "Al Rayes Laundry & Dry Cleaning: Qatar's premier multi-tenant operational ecosystem powered by TSysLab.",
+    "subtitle": "Artemis Laundry & Dry Cleaning: Qatar's premier multi-tenant operational ecosystem powered by TSysLab.",
     "image": "/assets/hero-industrial.svg"
   },
   "portals": [
@@ -34,13 +34,13 @@
   ],
   "testimonials": [
     {
-      "quote": "The Al Rayes ecosystem transformed our operational visibility and customer trust overnight.",
+      "quote": "The Artemis ecosystem transformed our operational visibility and customer trust overnight.",
       "author": "Operations Director",
       "image": "/assets/avatar-1.png"
     }
   ],
   "contact": {
-    "email": "support@alrayeslaundry.com",
+    "email": "support@industriallaundry.com",
     "phone": "+974 4444 0000",
     "address": "Industrial Area, Doha, Qatar"
   }

@@ -15,25 +15,25 @@ async function main() {
   await prisma.user.upsert({
     where: { username: 'admin' },
     update: {},
-    create: { username: 'admin', password: adminPass, name: 'Administrator', email: 'admin@alrayes.com', role: 'admin', department: 'IT' },
+    create: { username: 'admin', password: adminPass, name: 'Administrator', email: 'admin@industrial.com', role: 'admin', department: 'IT' },
   });
 
   await prisma.user.upsert({
     where: { username: 'simon' },
     update: {},
-    create: { username: 'simon', password: simonPass, name: 'Simon Peter', email: 'simon@alrayes.com', role: 'admin', department: 'IT' },
+    create: { username: 'simon', password: simonPass, name: 'Simon Peter', email: 'simon@industrial.com', role: 'admin', department: 'IT' },
   });
 
   await prisma.user.upsert({
     where: { username: 'demo' },
     update: {},
-    create: { username: 'demo', password: demoPass, name: 'Demo User', email: 'demo@alrayes.com', role: 'user', department: 'Operations' },
+    create: { username: 'demo', password: demoPass, name: 'Demo User', email: 'demo@industrial.com', role: 'user', department: 'Operations' },
   });
 
   await prisma.user.upsert({
     where: { username: 'manager' },
     update: {},
-    create: { username: 'manager', password: managerPass, name: 'Department Manager', email: 'manager@alrayes.com', role: 'manager', department: 'Administration' },
+    create: { username: 'manager', password: managerPass, name: 'Department Manager', email: 'manager@industrial.com', role: 'manager', department: 'Administration' },
   });
 
   const departments = [
@@ -83,13 +83,13 @@ async function main() {
   const existingAnn = await prisma.announcement.findFirst({ where: { title: 'Welcome to IT Portal' } });
   if (!existingAnn) {
     await prisma.announcement.create({
-      data: { title: 'Welcome to IT Portal', content: 'Welcome to the Al Rayes Laundry IT Management Portal.', category: 'general', priority: 'normal', isActive: true, authorName: 'IT Department' },
+      data: { title: 'Welcome to IT Portal', content: 'Welcome to the Artemis Laundry IT Management Portal.', category: 'general', priority: 'normal', isActive: true, authorName: 'IT Department' },
     });
   }
 
   // Create settings
   const settings = [
-    { key: 'company_name', value: 'Al Rayes Laundry' },
+    { key: 'company_name', value: 'Artemis Laundry' },
     { key: 'company_address', value: 'Doha, Qatar' },
     { key: 'ticket_prefix', value: 'TKT' },
     { key: 'asset_prefix', value: 'AST' },

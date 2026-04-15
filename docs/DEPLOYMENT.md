@@ -1,5 +1,5 @@
 # IT Portal Deployment Guide
-## Al Rayes Laundry - IT Management Portal
+## Artemis Laundry - IT Management Portal
 
 ### Server Requirements
 - Ubuntu Server 20.04+ / Debian 11+
@@ -240,6 +240,6 @@ sudo systemctl restart postgresql
 
 ## Support
 
-- IT Department: it@alrayes.com
+- IT Department: it@industrial.com
 - IT HOD: Simon Peter
 - Portal Version: 4.0

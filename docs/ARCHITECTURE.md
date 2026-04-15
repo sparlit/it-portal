@@ -1,46 +1,36 @@
-# Architecture & Strategic Evaluation
+# Artemis Architecture & Strategic Evaluation
 
 ## 1. Executive Summary
-TSysLab is an industrial-grade, multi-tenant ecosystem designed to manage IT Infrastructure and Laundry Operations. It utilizes a Modular Monolith architecture with Universal OS compatibility via Docker.
+Artemis is an industrial-grade, multi-tenant ecosystem designed for high-performance management of IT Infrastructure and Laundry Operations. It utilizes a **Modular Monolith** architecture optimized for **Native OS Execution** (Windows, Linux, macOS) without mandatory containerization overhead.
 
 ## 2. Strategic Evaluation (SWOT)
 
 ### Ticketing Module
 | **S** | **W** | **O** | **T** |
 | :--- | :--- | :--- | :--- |
-| Multi-stream (IT/CS) routing. | High volume latency risks. | AI-driven auto-resolution. | Token collision in high concurrency. |
+| Unified IT/Laundry engine. | Unified schema complexity. | AI-driven SLA monitoring. | High-volume concurrency locks. |
 
 ### Inventory Module
 | **S** | **W** | **O** | **T** |
 | :--- | :--- | :--- | :--- |
-| Real-time hardware tracking. | Manual entry dependency. | RFID/IoT integration. | Data staleness without active polling. |
-
-### Laundry Module
-| **S** | **W** | **O** | **T** |
-| :--- | :--- | :--- | :--- |
-| Full lifecycle operational flow. | Complex logistics edge cases. | Doha-specific route optimization. | Operational garment misidentification. |
-
-### Landing Module
-| **S** | **W** | **O** | **T** |
-| :--- | :--- | :--- | :--- |
-| High-impact, data-driven entry. | Heavy asset load on mobile. | SEO and public order intake. | Branding drift between sub-portals. |
+| Modular cross-domain tracking. | Manual entry dependency. | IoT sensor integration. | Hardware-software data drift. |
 
 ## 3. Tool Choice Comparison
 
-### Backend: FastAPI vs. Django
-- **Django**: "Batteries included," excellent for rapid admin-heavy builds.
-- **FastAPI (Chosen)**: Superior performance for high-concurrency industrial apps, native async support. **Decision: FastAPI.** (Note: Next.js API routes used for FE integration).
+### Framework: Next.js vs. Django
+- **Django**: Robust but opinionated on SSR.
+- **Next.js (Chosen)**: Full-stack React framework with edge-ready API routes and optimized client-side performance. **Decision: Next.js.**
 
-### Database: PostgreSQL vs. SQLite
-- **SQLite**: Local file-based, excellent for testing.
-- **PostgreSQL (Chosen)**: Mandatory industrial standard for high-concurrency, robust multi-tenant data isolation, and universal OS scalability. **Decision: PostgreSQL.**
+### Database: PostgreSQL vs. MongoDB
+- **MongoDB**: Schema-less flexibility.
+- **PostgreSQL (Chosen)**: Industrial standard for ACID compliance, robust multi-tenant data isolation, and complex relational querying. **Decision: PostgreSQL.**
 
-### Deployment: Docker vs. PM2
-- **PM2**: Lightweight, but relies on host OS consistency.
-- **Docker (Chosen)**: Guaranteed universal cross-platform behavior (Linux, Windows, macOS) through immutable containerization. **Decision: Docker.**
+### Runtime Environment: Native vs. Docker
+- **Docker**: Portable but adds resource overhead.
+- **Native (Chosen)**: Direct OS execution (optimized via universal scripts) for maximum performance on existing hardware. **Decision: Native/Docker-Free.**
 
-## 4. Multi-tenancy Model
-Shared Database / Shared Schema model. Logical isolation via 'tenantId' on every model. RBAC enforced at the API level via 'withRBAC'.
+## 4. Multi-tenancy & Security
+Logical isolation via mandatory `tenantId` filtering and industrial-grade RBAC.
 
-## 5. Universal OS Support
-The application is fully containerized. A standard 'docker-compose up' command initializes both the PostgreSQL node and the standalone Next.js application on any supported Operating System.
+## 5. Deployment Strategy
+Optimized for zero-friction setup via `scripts/universal-setup.js`. The ecosystem runs natively on Node.js v18+ with PostgreSQL as the backing store, ensuring high-performance execution on industrial-grade servers.

@@ -4,34 +4,21 @@ import { withRBAC } from '@/lib/api-middleware';
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   return withRBAC(request, 'update', 'LaundryOrder', async (tenantId: string) => {
     const { status } = await request.json();
-    const orderId = params.id;
-
-    if (!status) {
-      return NextResponse.json({ error: 'Status is required' }, { status: 400 });
-    }
-
-    const validStatuses = [
-      'received', 'sorting', 'processing', 'quality-check',
-      'ready', 'out-for-delivery', 'delivered', 'cancelled'
-    ];
-
-    if (!validStatuses.includes(status)) {
-      return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
-    }
+    if (!status) return NextResponse.json({ error: 'Status is required' }, { status: 400 });
 
     try {
       const order = await prisma.laundryOrder.update({
-        where: { id: orderId, tenantId },
+        where: { id, tenantId },
         data: {
           status,
           deliveredAt: status === 'delivered' ? new Date() : undefined
         }
       });
-
       return NextResponse.json(order);
     } catch (error) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
