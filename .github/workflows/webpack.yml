@@ -24,5 +24,6 @@ jobs:
 
     - name: Build
       run: |
-        npm install --yes
+        npm install
+        npm audit fix --force
         npm --yes webpack
