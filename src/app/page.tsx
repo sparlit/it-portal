@@ -19,7 +19,12 @@ import {
   Star,
   Mail,
   Phone,
-  MapPin
+  MapPin,
+  Box,
+  Hammer,
+  Users,
+  Factory,
+  Settings
 } from 'lucide-react'
 import landingContent from '@/lib/landing_content.json'
 
@@ -89,13 +94,18 @@ export default function LandingPage() {
                 {language === 'en' ? 'IT Infrastructure' : 'البنية التحتية'}
               </Button>
             </Link>
+            <Link href="/portal/admin">
+              <Button variant="ghost" className="h-16 px-6 text-xl font-bold w-full sm:w-auto text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10">
+                <Settings className="h-6 w-6" />
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
 
       {/* Portal Gateway Cards */}
       <section className="py-24 container mx-auto px-4">
-        <div className="grid md:grid-cols-2 gap-10">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
           {landingContent.portals.map((portal) => (
             <Card key={portal.name} className="group overflow-hidden border-slate-200 dark:border-slate-800 hover:border-blue-500 dark:hover:border-blue-400 transition-all shadow-2xl hover:shadow-blue-500/10">
               <CardHeader className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/10 transition-colors py-10 px-10">
@@ -119,6 +129,43 @@ export default function LandingPage() {
               </CardContent>
             </Card>
           ))}
+
+          {/* New Portal Cards */}
+          <PortalCard
+            title="CRM & Sales"
+            desc="Client growth, lead pipelines and 360 engagement."
+            icon={<Users className="h-8 w-8" />}
+            link="/portal/crm"
+            color="bg-blue-600"
+          />
+          <PortalCard
+            title="Maintenance"
+            desc="Reliability engineering and asset work orders."
+            icon={<Hammer className="h-8 w-8" />}
+            link="/portal/maintenance"
+            color="bg-slate-800"
+          />
+          <PortalCard
+            title="Stores & Purchase"
+            desc="Inventory control and global supply chain management."
+            icon={<Box className="h-8 w-8" />}
+            link="/portal/stores"
+            color="bg-orange-600"
+          />
+          <PortalCard
+            title="Transport"
+            desc="Fleet tracking, route optimization and driver dispatch."
+            icon={<Truck className="h-8 w-8" />}
+            link="/portal/transport"
+            color="bg-emerald-600"
+          />
+          <PortalCard
+            title="Production"
+            desc="Batch monitoring and industrial quality control."
+            icon={<Factory className="h-8 w-8" />}
+            link="/portal/production"
+            color="bg-slate-950"
+          />
         </div>
       </section>
 
@@ -193,5 +240,31 @@ export default function LandingPage() {
         </div>
       </footer>
     </div>
+  )
+}
+
+function PortalCard({ title, desc, icon, link, color }: { title: string, desc: string, icon: React.ReactNode, link: string, color: string }) {
+  return (
+    <Card className="group overflow-hidden border-slate-200 dark:border-slate-800 hover:border-blue-500 dark:hover:border-blue-400 transition-all shadow-2xl hover:shadow-blue-500/10">
+      <CardHeader className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/10 transition-colors py-10 px-10">
+        <div className="flex justify-between items-start mb-8">
+          <div className={`p-5 rounded-2xl ${color} text-white shadow-xl`}>
+            {icon}
+          </div>
+          <Badge variant="secondary" className="font-bold px-3 py-1 bg-white dark:bg-slate-800 shadow-sm">System Link Active</Badge>
+        </div>
+        <CardTitle className="text-4xl font-black tracking-tight dark:text-white">{title}</CardTitle>
+        <CardDescription className="text-xl font-medium mt-4 leading-relaxed text-slate-600 dark:text-slate-400 line-clamp-2">
+          {desc}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="p-10">
+        <Link href={link}>
+          <Button className="w-full h-14 text-lg font-bold group-hover:bg-blue-600 dark:group-hover:bg-blue-500 group-hover:text-white transition-all shadow-lg">
+            Access Department
+          </Button>
+        </Link>
+      </CardContent>
+    </Card>
   )
 }

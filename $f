@@ -1,0 +1,91 @@
+"use client"
+
+import { useI18n } from '@/lib/i18n/context'
+import { useTheme } from "@/lib/theme-context"
+import { NotificationCenter } from "@/components/shared/layout/NotificationCenter"
+import { Globe, ArrowLeft, LayoutDashboard } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import Link from 'next/link'
+import { IndustrialDashboard } from '@/components/modules/core/IndustrialDashboard'
+import { RequisitionManager } from '@/components/shared/procurement/RequisitionManager'
+
+// Import portal-specific modules based on the filename or path
+$( [[ "$f" == *"it"* ]] && echo "import { ITTicketDashboard } from '@/components/modules/it/ITTicketDashboard'; import { AssetInventory } from '@/components/modules/it/AssetInventory'; import { InfrastructureMonitor } from '@/components/modules/it/InfrastructureMonitor'; import { SecretVault } from '@/components/modules/it/SecretVault'; import { KnowledgeBase } from '@/components/modules/it/KnowledgeBase';" )
+$( [[ "$f" == *"laundry"* ]] && echo "import { LaundryTicketDashboard } from '@/components/modules/laundry/LaundryTicketDashboard'; import { LaundryOrderManager } from '@/components/modules/laundry/LaundryOrderManager'; import { LaundryCustomerManager } from '@/components/modules/laundry/LaundryCustomerManager'; import { ServicePricing } from '@/components/modules/laundry/ServicePricing'; import { DriverScheduling } from '@/components/modules/laundry/DriverScheduling';" )
+$( [[ "$f" == *"transport"* ]] && echo "import { FleetMap } from '@/components/modules/transport/FleetMap'; import { DriverScheduling } from '@/components/modules/laundry/DriverScheduling'; import { VehicleServiceLogs } from '@/components/modules/transport/VehicleServiceLogs';" )
+$( [[ "$f" == *"stores"* ]] && echo "import { StockOverview } from '@/components/modules/stores/StockOverview';" )
+$( [[ "$f" == *"maintenance"* ]] && echo "import { MaintenanceTasks } from '@/components/modules/maintenance/MaintenanceTasks';" )
+$( [[ "$f" == *"crm"* ]] && echo "import { LeadPipeline } from '@/components/modules/crm/LeadPipeline'; import { Customer360 } from '@/components/modules/crm/Customer360';" )
+$( [[ "$f" == *"production"* ]] && echo "import { BatchMonitor } from '@/components/modules/production/BatchMonitor'; import { OEMetrics } from '@/components/modules/production/OEMetrics';" )
+
+export default function PortalPage() {
+  const { t, language, setLanguage } = useI18n();
+  const { theme } = useTheme();
+  const portalName = "$(basename $(dirname $f))".toUpperCase();
+
+  return (
+    <main className="container mx-auto p-4 md:p-8" style={{ '--primary-brand': theme.primaryColor } as any}>
+      <div className="flex flex-col gap-8">
+        <header className="border-b pb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div className="flex items-center gap-4">
+            <Link href="/">
+              <Button variant="ghost" size="icon" className="rounded-full border shadow-sm">
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            </Link>
+            <div>
+              <h1 className="text-4xl font-extrabold tracking-tight">{portalName} Operations</h1>
+              <p className="text-xl text-muted-foreground mt-2">Enterprise Industrial Node</p>
+            </div>
+          </div>
+          <div className="flex gap-4 items-center">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex items-center gap-2 font-bold"
+              onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
+            >
+              <Globe className="h-4 w-4" />
+              {language === 'en' ? 'العربية' : 'English'}
+            </Button>
+            <NotificationCenter />
+            <Badge variant="outline" className="text-xs uppercase tracking-wider px-3 py-1 bg-slate-50 text-slate-700 border-slate-200">
+              V2.1-ACTIVE
+            </Badge>
+          </div>
+        </header>
+
+        <Tabs defaultValue="analytics" className="w-full">
+          <div className="overflow-x-auto pb-4 scrollbar-hide">
+            <TabsList className="flex h-auto gap-2 bg-transparent p-0 min-w-max">
+              <TabsTrigger value="analytics" className="data-[state=active]:bg-slate-900 data-[state=active]:text-white border font-bold">Analytics</TabsTrigger>
+              <TabsTrigger value="main" className="border font-bold">Operations</TabsTrigger>
+              <TabsTrigger value="indent" className="border font-bold">Procurement</TabsTrigger>
+            </TabsList>
+          </div>
+
+          <TabsContent value="analytics">
+            <IndustrialDashboard />
+          </TabsContent>
+
+          <TabsContent value="main">
+            {/* Conditional Portal Modules */}
+            $( [[ "$f" == *"it"* ]] && echo "<ITTicketDashboard />" )
+            $( [[ "$f" == *"laundry"* ]] && echo "<LaundryOrderManager />" )
+            $( [[ "$f" == *"transport"* ]] && echo "<FleetMap />" )
+            $( [[ "$f" == *"stores"* ]] && echo "<StockOverview />" )
+            $( [[ "$f" == *"maintenance"* ]] && echo "<MaintenanceTasks />" )
+            $( [[ "$f" == *"crm"* ]] && echo "<LeadPipeline />" )
+            $( [[ "$f" == *"production"* ]] && echo "<BatchMonitor />" )
+          </TabsContent>
+
+          <TabsContent value="indent">
+            <RequisitionManager />
+          </TabsContent>
+        </Tabs>
+      </div>
+    </main>
+  )
+}

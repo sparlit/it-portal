@@ -13,19 +13,24 @@
     "db:seed": "node prisma/seed.js"
   },
   "dependencies": {
-    "@prisma/client": "^5.22.0",
     "@radix-ui/react-tabs": "^1.1.13",
+    "@types/leaflet": "^1.9.21",
     "bcryptjs": "^2.4.3",
     "clsx": "^2.1.1",
     "jose": "^6.2.2",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.7",
+    "leaflet": "^1.9.4",
     "lucide-react": "^1.8.0",
     "next": "14.2.35",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-leaflet": "^4.2.1",
     "tailwind-merge": "^3.5.0",
     "uuid": "^10.0.0"
   },
   "devDependencies": {
+    "@prisma/client": "^5.22.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20.14.10",
     "@types/react": "^18.3.3",
