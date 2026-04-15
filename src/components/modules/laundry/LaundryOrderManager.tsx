@@ -4,8 +4,26 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { useI18n } from '@/lib/i18n/context'
-import { Plus, ShoppingBag, Clock, CheckCircle2, ChevronRight } from 'lucide-react'
+import { Plus, ShoppingBag, Clock, CheckCircle2, ChevronRight, Loader2, Trash2 } from 'lucide-react'
 
 interface Order {
   id: string;
@@ -22,24 +40,89 @@ interface Order {
 export function LaundryOrderManager() {
   const { t } = useI18n()
   const [orders, setOrders] = useState<Order[]>([])
+  const [customers, setCustomers] = useState<any[]>([])
+  const [services, setServices] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const [formData, setFormData] = useState({
+    customerId: '',
+    items: [] as { serviceId: string, quantity: number }[],
+    notes: '',
+    address: ''
+  })
+
+  async function fetchData() {
+    setLoading(true)
+    try {
+      const [ordersRes, customersRes, servicesRes] = await Promise.all([
+        fetch('/api/laundry/orders'),
+        fetch('/api/laundry/customers'),
+        fetch('/api/laundry/services')
+      ])
+
+      const ordersData = await ordersRes.json()
+      const customersData = await customersRes.json()
+      const servicesData = await servicesRes.json()
+
+      if (Array.isArray(ordersData)) setOrders(ordersData)
+      if (Array.isArray(customersData)) setCustomers(customersData)
+      if (Array.isArray(servicesData)) setServices(servicesData)
+    } catch (error) {
+      console.error('Failed to fetch laundry data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    async function fetchOrders() {
-      try {
-        const response = await fetch('/api/laundry/orders')
-        const data = await response.json()
-        if (Array.isArray(data)) {
-          setOrders(data)
-        }
-      } catch (error) {
-        console.error('Failed to fetch orders:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchOrders()
+    fetchData()
   }, [])
+
+  const addItem = () => {
+    setFormData({
+      ...formData,
+      items: [...formData.items, { serviceId: services[0]?.id || '', quantity: 1 }]
+    })
+  }
+
+  const removeItem = (index: number) => {
+    const newItems = [...formData.items]
+    newItems.splice(index, 1)
+    setFormData({ ...formData, items: newItems })
+  }
+
+  const updateItem = (index: number, field: string, value: any) => {
+    const newItems = [...formData.items]
+    newItems[index] = { ...newItems[index], [field]: value }
+    setFormData({ ...formData, items: newItems })
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (formData.items.length === 0) {
+      alert('Please add at least one item')
+      return
+    }
+    setIsSubmitting(true)
+    try {
+      const response = await fetch('/api/laundry/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
+      if (response.ok) {
+        setIsDialogOpen(false)
+        setFormData({ customerId: '', items: [], notes: '', address: '' })
+        fetchData()
+      }
+    } catch (error) {
+      console.error('Failed to create order:', error)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   const getStatusStyle = (status: string) => {
     switch (status) {
@@ -58,9 +141,97 @@ export function LaundryOrderManager() {
           <h2 className="text-3xl font-bold tracking-tight text-slate-900">{t('orders')}</h2>
           <p className="text-muted-foreground font-medium">Real-time operational workflow & lifecycle tracking.</p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/20">
-          <Plus className="mr-2 h-4 w-4" /> New Order
-        </Button>
+
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/20">
+              <Plus className="mr-2 h-4 w-4" /> New Order
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Create Laundry Order</DialogTitle>
+              <DialogDescription>
+                Select a customer and add services to the order.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="space-y-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="customer">Customer</Label>
+                <Select
+                  value={formData.customerId}
+                  onValueChange={(val) => setFormData({ ...formData, customerId: val })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Customer" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {customers.map(c => (
+                      <SelectItem key={c.id} value={c.id}>{c.name} ({c.phone})</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <Label>Order Items</Label>
+                  <Button type="button" variant="outline" size="sm" onClick={addItem}>
+                    <Plus className="h-3 w-3 mr-1" /> Add Service
+                  </Button>
+                </div>
+
+                <div className="max-h-[200px] overflow-y-auto space-y-2 border rounded-md p-2">
+                  {formData.items.length === 0 && <p className="text-xs text-center text-slate-400 py-4">No items added.</p>}
+                  {formData.items.map((item, idx) => (
+                    <div key={idx} className="flex gap-2 items-center">
+                      <Select
+                        value={item.serviceId}
+                        onValueChange={(val) => updateItem(idx, 'serviceId', val)}
+                      >
+                        <SelectTrigger className="flex-1">
+                          <SelectValue placeholder="Service" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {services.map(s => (
+                            <SelectItem key={s.id} value={s.id}>{s.name} (QAR {s.price})</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Input
+                        type="number"
+                        className="w-16"
+                        value={item.quantity}
+                        onChange={(e) => updateItem(idx, 'quantity', parseInt(e.target.value))}
+                        min="1"
+                      />
+                      <Button type="button" variant="ghost" size="icon" onClick={() => removeItem(idx)}>
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="addr">Pickup/Delivery Address</Label>
+                <Input
+                  id="addr"
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  placeholder="Leave empty for walk-in"
+                />
+              </div>
+
+              <DialogFooter>
+                <Button type="submit" disabled={isSubmitting || !formData.customerId}>
+                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Generate Order
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

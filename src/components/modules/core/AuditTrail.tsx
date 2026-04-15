@@ -2,12 +2,20 @@
 
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { History, ShieldCheck, User, Activity } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 import { useI18n } from '@/lib/i18n/context'
+import { History, Shield, User, Clock } from 'lucide-react'
+
+interface LogEntry {
+  id: string;
+  user: string;
+  action: string;
+  timestamp: string;
+}
 
 export function AuditTrail() {
   const { t } = useI18n()
-  const [logs, setLogs] = useState<any[]>([])
+  const [logs, setLogs] = useState<LogEntry[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -31,59 +39,47 @@ export function AuditTrail() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900">{t('audit')}</h2>
-          <p className="text-slate-500 font-medium">Immutable log of administrative and operational actions.</p>
+          <h2 className="text-3xl font-black tracking-tight text-slate-900">{t('audit')}</h2>
+          <p className="text-muted-foreground font-bold text-xs uppercase tracking-widest">Immutable Industrial Activity Stream</p>
         </div>
-        <div className="flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-full border border-green-200 shadow-sm">
-          <ShieldCheck className="h-4 w-4" />
-          <span className="text-xs font-black uppercase tracking-widest">Compliance Active</span>
-        </div>
+        <Badge className="bg-slate-900 text-white font-bold py-1 px-3 flex items-center gap-2">
+          <Shield className="h-3 w-3" /> Integrity Verified
+        </Badge>
       </div>
 
-      <Card className="border-slate-200 shadow-sm overflow-hidden">
-        <CardHeader className="bg-slate-50 border-b">
-          <CardTitle className="flex items-center gap-2 font-bold text-slate-800">
-            <History className="h-5 w-5 text-blue-600" /> Activity Stream
+      <Card className="border-slate-200 shadow-xl overflow-hidden bg-slate-50/50">
+        <CardHeader className="bg-white border-b">
+          <CardTitle className="flex items-center gap-2 font-black text-slate-800 text-sm uppercase tracking-widest">
+            <History className="h-4 w-4 text-blue-600" /> Operational History
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-slate-50 border-b">
-                <tr>
-                  <th className="text-left p-4 font-bold text-slate-500 uppercase tracking-widest text-[10px]">{t('timestamp')}</th>
-                  <th className="text-left p-4 font-bold text-slate-500 uppercase tracking-widest text-[10px]">{t('user')}</th>
-                  <th className="text-left p-4 font-bold text-slate-500 uppercase tracking-widest text-[10px]">{t('action')}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {loading ? (
-                  <tr><td colSpan={3} className="p-8 text-center animate-pulse text-slate-400 font-bold">{t('loading')}</td></tr>
-                ) : logs.length === 0 ? (
-                  <tr><td colSpan={3} className="p-8 text-center text-slate-400 font-medium">No activity recorded yet.</td></tr>
-                ) : (
-                  logs.map((log) => (
-                    <tr key={log.id} className="hover:bg-slate-50 transition-colors font-medium">
-                      <td className="p-4 font-mono text-xs text-slate-500 whitespace-nowrap font-bold">
-                        {new Date(log.timestamp).toLocaleString()}
-                      </td>
-                      <td className="p-4">
-                        <div className="flex items-center gap-2 font-black text-slate-900">
-                          <User className="h-3 w-3 text-slate-400" />
-                          {log.user}
-                        </div>
-                      </td>
-                      <td className="p-4 text-slate-700">
-                        <div className="flex items-center gap-2">
-                          <Activity className="h-3 w-3 text-blue-500" />
-                          {log.action}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+          <div className="divide-y divide-slate-200">
+            {loading ? (
+              <div className="p-12 text-center animate-pulse font-bold text-slate-400">Accessing Audit Vault...</div>
+            ) : logs.length === 0 ? (
+              <div className="p-12 text-center text-slate-400 font-medium">No activity recorded in the current session.</div>
+            ) : (
+              logs.map((log) => (
+                <div key={log.id} className="p-4 flex items-center justify-between bg-white hover:bg-slate-50 transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+                      <User className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="font-black text-slate-900 tracking-tight">{log.action}</p>
+                      <p className="text-xs font-bold text-blue-600 uppercase tracking-tighter">By: {log.user}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="flex items-center justify-end gap-1.5 text-slate-500 font-bold text-[10px] uppercase tracking-widest">
+                      <Clock className="h-3 w-3" /> {new Date(log.timestamp).toLocaleTimeString()}
+                    </div>
+                    <p className="text-[9px] font-black text-slate-400 mt-1">{new Date(log.timestamp).toLocaleDateString()}</p>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </CardContent>
       </Card>

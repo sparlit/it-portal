@@ -11,7 +11,8 @@ const ENCRYPTION_KEY = process.env.VAULT_MASTER_KEY;
 if (!ENCRYPTION_KEY) {
   throw new Error('CRITICAL: VAULT_MASTER_KEY environment variable is missing.');
 }
-const MASTER_KEY = Buffer.from(ENCRYPTION_KEY, 'utf8').slice(0, 32);
+// Hash the key to ensure it is exactly 32 bytes (256 bits) for AES-256-CBC
+const MASTER_KEY = crypto.createHash('sha256').update(ENCRYPTION_KEY).digest();
 const IV_LENGTH = 16;
 
 export class VaultService {

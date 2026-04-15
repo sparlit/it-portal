@@ -3,29 +3,71 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Key, Lock, Eye, EyeOff, Copy, Plus, ShieldAlert } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Key, Lock, Eye, EyeOff, Copy, Plus, ShieldAlert, Loader2 } from 'lucide-react'
 
 export function SecretVault() {
   const [secrets, setSecrets] = useState<any[]>([])
   const [visible, setVisible] = useState<Record<string, boolean>>({})
   const [loading, setLoading] = useState(true)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const [formData, setFormData] = useState({
+    system: '',
+    username: '',
+    password: ''
+  })
+
+  async function fetchSecrets() {
+    setLoading(true)
+    try {
+      const response = await fetch('/api/it/vault')
+      const data = await response.json()
+      if (Array.isArray(data)) {
+        setSecrets(data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch secrets:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    async function fetchSecrets() {
-      try {
-        const response = await fetch('/api/it/vault')
-        const data = await response.json()
-        if (Array.isArray(data)) {
-          setSecrets(data)
-        }
-      } catch (error) {
-        console.error('Failed to fetch secrets:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
     fetchSecrets()
   }, [])
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    try {
+      const response = await fetch('/api/it/vault', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
+      if (response.ok) {
+        setIsDialogOpen(false)
+        setFormData({ system: '', username: '', password: '' })
+        fetchSecrets()
+      }
+    } catch (error) {
+      console.error('Failed to create secret:', error)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -36,9 +78,61 @@ export function SecretVault() {
           </h2>
           <p className="text-slate-500 font-medium">Encrypted storage for administrative credentials.</p>
         </div>
-        <Button className="bg-slate-900 font-bold">
-          <Plus className="mr-2 h-4 w-4" /> Add Secret
-        </Button>
+
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-slate-900 font-bold">
+              <Plus className="mr-2 h-4 w-4" /> Add Secret
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Add Administrative Secret</DialogTitle>
+              <DialogDescription>
+                Credentials will be encrypted with AES-256-CBC before storage.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="system" className="text-right">System</Label>
+                <Input
+                  id="system"
+                  value={formData.system}
+                  onChange={(e) => setFormData({ ...formData, system: e.target.value })}
+                  className="col-span-3"
+                  placeholder="e.g. Core Database"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="user" className="text-right">Username</Label>
+                <Input
+                  id="user"
+                  value={formData.username}
+                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="pass" className="text-right">Password</Label>
+                <Input
+                  id="pass"
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  className="col-span-3"
+                  required
+                />
+              </div>
+              <DialogFooter>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Encrypt & Save
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3 shadow-sm">

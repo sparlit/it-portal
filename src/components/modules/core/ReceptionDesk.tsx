@@ -4,28 +4,70 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Users, Calendar, UserCheck, UserPlus, Clock, MoreVertical, MapPin } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Users, Calendar, UserCheck, UserPlus, Clock, MoreVertical, MapPin, Loader2 } from 'lucide-react'
 
 export function ReceptionDesk() {
   const [visitors, setVisitors] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const [formData, setFormData] = useState({
+    name: '',
+    company: '',
+    purpose: ''
+  })
+
+  async function fetchVisitors() {
+    setLoading(true)
+    try {
+      const response = await fetch('/api/core/visitors')
+      const data = await response.json()
+      if (Array.isArray(data)) {
+        setVisitors(data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch visitors:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    async function fetchVisitors() {
-      try {
-        const response = await fetch('/api/core/visitors')
-        const data = await response.json()
-        if (Array.isArray(data)) {
-          setVisitors(data)
-        }
-      } catch (error) {
-        console.error('Failed to fetch visitors:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
     fetchVisitors()
   }, [])
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    try {
+      const response = await fetch('/api/core/visitors', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
+      if (response.ok) {
+        setIsDialogOpen(false)
+        setFormData({ name: '', company: '', purpose: '' })
+        fetchVisitors()
+      }
+    } catch (error) {
+      console.error('Failed to check in visitor:', error)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -38,9 +80,60 @@ export function ReceptionDesk() {
           <Button variant="outline" className="font-bold border-slate-300">
             <Calendar className="mr-2 h-4 w-4" /> Schedule Visit
           </Button>
-          <Button className="font-bold">
-            <UserPlus className="mr-2 h-4 w-4" /> New Check-in
-          </Button>
+
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="font-bold">
+                <UserPlus className="mr-2 h-4 w-4" /> New Check-in
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Visitor Check-In</DialogTitle>
+                <DialogDescription>
+                  Register a new visitor arriving at the facility.
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="vname" className="text-right">Name</Label>
+                  <Input
+                    id="vname"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="col-span-3"
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="vcompany" className="text-right">Company</Label>
+                  <Input
+                    id="vcompany"
+                    value={formData.company}
+                    onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                    className="col-span-3"
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="vpurpose" className="text-right">Purpose</Label>
+                  <Input
+                    id="vpurpose"
+                    value={formData.purpose}
+                    onChange={(e) => setFormData({ ...formData, purpose: e.target.value })}
+                    className="col-span-3"
+                    required
+                  />
+                </div>
+                <DialogFooter>
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Confirm Check-In
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 

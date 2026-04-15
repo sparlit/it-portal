@@ -48,7 +48,7 @@ export function InfrastructureMonitor() {
               });
           }}
         >
-          <RefreshCw className={`mr-2 h-4 w-4 \${loading ? 'animate-spin' : ''}`} /> Refresh Status
+          <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Refresh Status
         </Button>
       </div>
 

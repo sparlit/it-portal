@@ -4,8 +4,19 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { useI18n } from '@/lib/i18n/context'
-import { Plus, Users, Mail, Phone, MapPin } from 'lucide-react'
+import { Plus, Users, Mail, Phone, MapPin, Loader2 } from 'lucide-react'
 
 interface Customer {
   id: string;
@@ -20,23 +31,56 @@ export function LaundryCustomerManager() {
   const { t } = useI18n()
   const [customers, setCustomers] = useState<Customer[]>([])
   const [loading, setLoading] = useState(true)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    address: '',
+    notes: ''
+  })
+
+  async function fetchCustomers() {
+    setLoading(true)
+    try {
+      const response = await fetch('/api/laundry/customers')
+      const data = await response.json()
+      if (Array.isArray(data)) {
+        setCustomers(data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch customers:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    async function fetchCustomers() {
-      try {
-        const response = await fetch('/api/laundry/customers')
-        const data = await response.json()
-        if (Array.isArray(data)) {
-          setCustomers(data)
-        }
-      } catch (error) {
-        console.error('Failed to fetch customers:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
     fetchCustomers()
   }, [])
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    try {
+      const response = await fetch('/api/laundry/customers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
+      if (response.ok) {
+        setIsDialogOpen(false)
+        setFormData({ name: '', phone: '', email: '', address: '', notes: '' })
+        fetchCustomers()
+      }
+    } catch (error) {
+      console.error('Failed to register customer:', error)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -45,9 +89,69 @@ export function LaundryCustomerManager() {
           <h2 className="text-3xl font-black tracking-tight text-slate-900">{t('customers')}</h2>
           <p className="text-muted-foreground font-bold text-xs uppercase tracking-widest">{t('crm_subtitle')}</p>
         </div>
-        <Button className="font-bold">
-          <Plus className="mr-2 h-4 w-4" /> Add Customer
-        </Button>
+
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="font-bold">
+              <Plus className="mr-2 h-4 w-4" /> Add Customer
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Register New Customer</DialogTitle>
+              <DialogDescription>
+                Create a new customer profile for the laundry service.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="name" className="text-right">Name</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="col-span-3"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="phone" className="text-right">Phone</Label>
+                <Input
+                  id="phone"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  className="col-span-3"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="email" className="text-right">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="address" className="text-right">Address</Label>
+                <Input
+                  id="address"
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  className="col-span-3"
+                />
+              </div>
+              <DialogFooter>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Register Customer
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <Card className="border-slate-200 shadow-sm overflow-hidden">
