@@ -4,22 +4,22 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { UserPlus, Users, Phone, Mail, MapPin } from 'lucide-react'
-import { Input } from '@/components/ui/input'
+import { useI18n } from '@/lib/i18n/context'
+import { Plus, Users, Mail, Phone, MapPin } from 'lucide-react'
 
 interface Customer {
   id: string;
   name: string;
-  phone: string;
   email?: string;
+  phone: string;
+  address?: string;
   loyaltyTier: string;
-  totalOrders: number;
 }
 
 export function LaundryCustomerManager() {
+  const { t } = useI18n()
   const [customers, setCustomers] = useState<Customer[]>([])
   const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
 
   useEffect(() => {
     async function fetchCustomers() {
@@ -38,75 +38,84 @@ export function LaundryCustomerManager() {
     fetchCustomers()
   }, [])
 
-  const filteredCustomers = customers.filter(customer =>
-    customer.name.toLowerCase().includes(search.toLowerCase()) ||
-    customer.phone.includes(search) ||
-    customer.email?.toLowerCase().includes(search.toLowerCase())
-  )
-
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Customer CRM</h2>
-          <p className="text-muted-foreground">Manage laundry customers and loyalty programs.</p>
+          <h2 className="text-3xl font-black tracking-tight text-slate-900">{t('customers')}</h2>
+          <p className="text-muted-foreground font-bold text-xs uppercase tracking-widest">{t('crm_subtitle')}</p>
         </div>
-        <div className="flex w-full md:w-auto gap-2">
-          <Input
-            placeholder="Search name or phone..."
-            className="md:w-64"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-            <UserPlus className="mr-2 h-4 w-4" /> Add Customer
-          </Button>
-        </div>
+        <Button className="font-bold">
+          <Plus className="mr-2 h-4 w-4" /> Add Customer
+        </Button>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {loading ? (
-          <p>Loading customers...</p>
-        ) : filteredCustomers.length === 0 ? (
-          <p className="col-span-full text-center text-muted-foreground py-20 border-2 border-dashed rounded-xl">No customers found.</p>
-        ) : (
-          filteredCustomers.map((customer) => (
-            <Card key={customer.id} className="overflow-hidden">
-              <CardHeader className="bg-muted/50 pb-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="text-lg">{customer.name}</CardTitle>
-                    <Badge variant="outline" className="mt-1 bg-blue-50 text-blue-600">
-                      {customer.loyaltyTier} Member
-                    </Badge>
-                  </div>
-                  <Users className="h-5 w-5 text-muted-foreground" />
-                </div>
-              </CardHeader>
-              <CardContent className="pt-4 space-y-3">
-                <div className="flex items-center text-sm">
-                  <Phone className="mr-2 h-4 w-4 text-muted-foreground" />
-                  {customer.phone}
-                </div>
-                {customer.email && (
-                  <div className="flex items-center text-sm">
-                    <Mail className="mr-2 h-4 w-4 text-muted-foreground" />
-                    {customer.email}
-                  </div>
+      <Card className="border-slate-200 shadow-sm overflow-hidden">
+        <CardHeader className="bg-slate-50 border-b">
+          <CardTitle className="flex items-center gap-2 font-black text-slate-800 uppercase tracking-widest text-xs">
+            <Users className="h-4 w-4 text-blue-600" /> Active Clientele
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50 border-b">
+                <tr>
+                  <th className="text-left p-4 font-black text-slate-500 uppercase tracking-widest text-[10px]">{t('customer_name')}</th>
+                  <th className="text-left p-4 font-black text-slate-500 uppercase tracking-widest text-[10px]">Contact Info</th>
+                  <th className="text-left p-4 font-black text-slate-500 uppercase tracking-widest text-[10px]">Loyalty</th>
+                  <th className="text-right p-4 font-black text-slate-500 uppercase tracking-widest text-[10px]">{t('actions')}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 font-medium">
+                {loading ? (
+                  <tr><td colSpan={4} className="p-12 text-center animate-pulse text-slate-400 font-black tracking-widest uppercase text-xs">{t('loading')}</td></tr>
+                ) : customers.length === 0 ? (
+                  <tr><td colSpan={4} className="p-12 text-center text-slate-400 font-bold">No customers registered.</td></tr>
+                ) : (
+                  customers.map((customer) => (
+                    <tr key={customer.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="p-4">
+                        <div className="font-black text-slate-900 tracking-tight">{customer.name}</div>
+                        <div className="text-[10px] font-bold text-slate-400 flex items-center gap-1 mt-0.5 uppercase">
+                          <MapPin className="h-3 w-3" /> {customer.address || 'No address'}
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex flex-col gap-0.5">
+                          <div className="flex items-center gap-1 text-xs font-black text-slate-700">
+                            <Phone className="h-3 w-3 text-blue-500" /> {customer.phone}
+                          </div>
+                          {customer.email && (
+                            <div className="flex items-center gap-1 text-xs text-slate-500 font-bold">
+                              <Mail className="h-3 w-3" /> {customer.email}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <Badge variant="outline" className={`font-black uppercase text-[10px] tracking-widest ${
+                          customer.loyaltyTier === 'gold' ? 'bg-amber-50 text-amber-600 border-amber-200 shadow-[0_0_8px_rgba(217,119,6,0.1)]' :
+                          customer.loyaltyTier === 'silver' ? 'bg-slate-50 text-slate-600 border-slate-200' :
+                          'bg-blue-50 text-blue-600 border-blue-200'
+                        }`}>
+                          {customer.loyaltyTier}
+                        </Badge>
+                      </td>
+                      <td className="p-4 text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button variant="ghost" size="sm" className="font-black text-[10px] uppercase tracking-widest text-blue-600">{t('edit')}</Button>
+                          <Button variant="ghost" size="sm" className="font-black text-[10px] uppercase tracking-widest text-slate-400">{t('view')}</Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
                 )}
-                <div className="pt-2 border-t flex justify-between items-center text-sm">
-                  <span className="text-muted-foreground">Total Orders:</span>
-                  <span className="font-bold">{customer.totalOrders}</span>
-                </div>
-                <div className="flex gap-2 pt-2">
-                  <Button variant="outline" size="sm" className="w-full">Edit</Button>
-                  <Button variant="outline" size="sm" className="w-full">Orders</Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
-      </div>
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
