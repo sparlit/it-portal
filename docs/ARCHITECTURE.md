@@ -20,19 +20,16 @@ TSysLab is an industrial-grade, multi-tenant ecosystem designed to manage IT Inf
 | Mobile driver app and RFID garment tagging integration. | Operational garment misidentification without strict tagging. |
 
 ### Ticketing Module
-| **S** | **W** | **O** | **T** |
-| :--- | :--- | :--- | :--- |
-| Multi-stream (IT/CS) routing. | High volume latency risks. | AI-driven auto-resolution. | Token collision in high concurrency. |
+| **Strengths** | **Weaknesses** |
+| :--- | :--- |
+| Multi-stream (IT/CS) routing; Date-prefixed unique IDs; Logical tenant isolation. | Potential performance bottlenecks in high-concurrency without DB partitioning. |
+| **Opportunities** | **Threats** |
+| AI-driven auto-resolution; Automated SLA monitoring integration. | Token collision in high concurrency; Data drift between assets and tickets. |
 
 ### Inventory Module
 | **S** | **W** | **O** | **T** |
 | :--- | :--- | :--- | :--- |
 | Real-time hardware tracking. | Manual entry dependency. | RFID/IoT integration. | Data staleness without active polling. |
-
-### Laundry Module
-| **S** | **W** | **O** | **T** |
-| :--- | :--- | :--- | :--- |
-| Full lifecycle operational flow. | Complex logistics edge cases. | Doha-specific route optimization. | Operational garment misidentification. |
 
 ### Landing Module
 | **S** | **W** | **O** | **T** |
@@ -41,13 +38,18 @@ TSysLab is an industrial-grade, multi-tenant ecosystem designed to manage IT Inf
 
 ## 3. Tool Choice Comparison
 
-### Backend: FastAPI vs. Django
+### Backend: FastAPI vs. Django vs. Next.js
 - **Django**: "Batteries included," excellent for rapid admin-heavy builds but can be bloated.
-- **FastAPI (Chosen)**: Superior performance for high-concurrency industrial apps, native async support, and modern Type-hinting. **Decision: FastAPI.** (Note: Next.js API routes are used for frontend integration).
+- **FastAPI**: Superior performance for high-concurrency industrial apps, native async support.
+- **Next.js (Chosen)**: Robust enterprise ecosystem, "App Router" handles complex multi-portal state better, and seamless full-stack integration for "Agentic" teammates. **Decision: Next.js API Routes with Service Layer.**
+
+### Ticketing: Off-the-shelf (Zammad) vs. Custom
+- **Zammad/GLPI**: High feature set but difficult to maintain deep logical coupling with the Laundry order lifecycle and multi-tenant billing.
+- **Custom Modular Monolith (Chosen)**: Zero licensing costs, 100% control over the schema, and seamless integration with the existing `Tenant` and `AuditLog` systems. **Decision: Custom Implementation.**
 
 ### Landing: Next.js vs. SvelteKit
 - **SvelteKit**: Faster initial load, less boilerplate, extremely small bundles.
-- **Next.js (Chosen)**: Robust enterprise ecosystem, "App Router" handles complex multi-portal state better, and massive community support for "Agentic" teammates. **Decision: Next.js.**
+- **Next.js (Chosen)**: Enterprise-grade stability, massive community support, and better handling of complex multi-portal routing. **Decision: Next.js.**
 
 ## 4. Multi-tenancy Model
 We use a **Shared Database / Shared Schema** model. Logical isolation is enforced via `tenantId` on every model.
@@ -57,5 +59,6 @@ We use a **Shared Database / Shared Schema** model. Logical isolation is enforce
 
 ## 5. Security Protocol
 - **JWT**: Stateless session management via `jose`.
-- **Bcrypt**: Industrial-grade password hashing.
-- **CORS/Headers**: Restricted to tenant-specific domains in future production iterations.
+- **AES-256-CBC**: Industrial-grade encryption for sensitive credentials in the Vault.
+- **Zod**: Mandatory schema validation for all API inputs to ensure data integrity.
+- **Audit Logging**: Immutable activity stream for all destructive and sensitive actions.

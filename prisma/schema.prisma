@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -18,7 +18,7 @@ model Tenant {
   id            String   @id @default(cuid())
   name          String
   slug          String   @unique
-  address       String?  @db.Text
+  address       String?
   phone         String?
   email         String?
   logo          String?
@@ -93,7 +93,7 @@ model Asset {
   assignedTo    String?
   purchaseDate  String?
   warrantyEnd   String?
-  notes         String?  @db.Text
+  notes         String?
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -109,13 +109,13 @@ model ITTicket {
 
   ticketId    String
   title       String
-  description String?  @db.Text
+  description String?
   priority    String   @default("medium")
   status      String   @default("open")
   category    String?
   requester   String
   assignedTo  String?
-  resolution  String?  @db.Text
+  resolution  String?
   slaDeadline String?
 
   createdAt   DateTime @default(now())
@@ -137,10 +137,10 @@ model LaundryCustomer {
   name        String
   email       String?
   phone       String
-  address     String?  @db.Text
+  address     String?
   loyaltyTier String   @default("standard")
   totalOrders Int      @default(0)
-  notes       String?  @db.Text
+  notes       String?
 
   orders      LaundryOrder[]
   tickets     LaundryTicket[]
@@ -191,7 +191,7 @@ model LaundryOrder {
   expectedDate  DateTime?
   deliveredAt   DateTime?
 
-  notes         String?  @db.Text
+  notes         String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -213,7 +213,7 @@ model LaundryOrderItem {
   garmentType String?
   color       String?
   brand       String?
-  specialInstructions String? @db.Text
+  specialInstructions String?
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -231,7 +231,7 @@ model LaundryLogistics {
 
   driverName    String?
   vehicleId     String?
-  address       String   @db.Text
+  address       String
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -262,11 +262,11 @@ model LaundryTicket {
 
   orderId     String?
   subject     String
-  message     String   @db.Text
+  message     String
   priority    String   @default("medium")
   status      String   @default("open")
   type        String   @default("complaint")
-  resolution  String?  @db.Text
+  resolution  String?
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -285,7 +285,7 @@ model LaundrySupplier {
   phone         String?
   email         String?
   category      String
-  address       String?  @db.Text
+  address       String?
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -319,7 +319,7 @@ model LaundryRepair {
   equipmentId   String
   equipment     LaundryEquipment @relation(fields: [equipmentId], references: [id])
 
-  description   String   @db.Text
+  description   String
   cost          Float    @default(0)
   technician    String?
   repairDate    DateTime
@@ -339,7 +339,7 @@ model Visitor {
   tenant        Tenant   @relation(fields: [tenantId], references: [id])
   name          String
   company       String?
-  purpose       String?  @db.Text
+  purpose       String?
   checkInTime   String?
   checkOutTime  String?
   status        String   @default("expected")
@@ -411,7 +411,7 @@ model QuickNote {
   tenantId      String
   tenant        Tenant   @relation(fields: [tenantId], references: [id])
   title         String
-  content       String?  @db.Text
+  content       String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   @@index([tenantId])
@@ -422,7 +422,7 @@ model NotebookPage {
   tenantId      String
   tenant        Tenant   @relation(fields: [tenantId], references: [id])
   title         String
-  content       String?  @db.Text
+  content       String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   @@index([tenantId])
@@ -444,7 +444,7 @@ model KnowledgeArticle {
   tenantId      String
   tenant        Tenant   @relation(fields: [tenantId], references: [id])
   title         String
-  content       String?  @db.Text
+  content       String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   @@index([tenantId])
@@ -465,7 +465,7 @@ model Announcement {
   tenantId      String
   tenant        Tenant   @relation(fields: [tenantId], references: [id])
   title         String
-  content       String?  @db.Text
+  content       String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   @@index([tenantId])
@@ -498,7 +498,7 @@ model SystemAlert {
   tenantId      String
   tenant        Tenant   @relation(fields: [tenantId], references: [id])
   title         String
-  message       String?  @db.Text
+  message       String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   @@index([tenantId])
@@ -509,7 +509,7 @@ model Setting {
   tenantId      String
   tenant        Tenant   @relation(fields: [tenantId], references: [id])
   key           String
-  value         String?  @db.Text
+  value         String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   @@index([tenantId])

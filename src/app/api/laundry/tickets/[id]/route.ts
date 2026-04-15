@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { withRBAC } from '@/lib/api-middleware';
 import { LaundryTicketUpdateSchema } from '@/lib/validations/tickets';
+import { AuditService } from '@/services/AuditService';
 
 export async function GET(
   request: NextRequest,
@@ -37,7 +38,6 @@ export async function PUT(
       const json = await request.json();
       const body = LaundryTicketUpdateSchema.parse(json);
 
-      // Verify ownership
       const existingTicket = await prisma.laundryTicket.findFirst({
         where: { id: params.id, tenantId }
       });
@@ -58,14 +58,7 @@ export async function PUT(
         }
       });
 
-      // Audit Log
-      await prisma.activityLog.create({
-        data: {
-          tenantId,
-          user: user?.username || 'system',
-          action: `Updated Laundry CS Ticket ${updatedTicket.ticketId} status to ${updatedTicket.status}`
-        }
-      });
+      await AuditService.logAction(tenantId, user?.username || 'system', `Updated Laundry CS Ticket ${updatedTicket.ticketId} status to ${updatedTicket.status}`);
 
       return NextResponse.json(updatedTicket);
     } catch (error: any) {
@@ -94,14 +87,7 @@ export async function DELETE(
       where: { id: params.id }
     });
 
-    // Audit Log
-    await prisma.activityLog.create({
-      data: {
-        tenantId,
-        user: user?.username || 'system',
-        action: `Deleted Laundry CS Ticket ${existingTicket.ticketId}`
-      }
-    });
+    await AuditService.logAction(tenantId, user?.username || 'system', `Deleted Laundry CS Ticket ${existingTicket.ticketId}`);
 
     return NextResponse.json({ message: 'Ticket deleted successfully' });
   });

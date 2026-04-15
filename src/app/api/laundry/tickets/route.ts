@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { withRBAC } from '@/lib/api-middleware';
 import { LaundryTicketCreateSchema } from '@/lib/validations/tickets';
 import { v4 as uuidv4 } from 'uuid';
+import { AuditService } from '@/services/AuditService';
 
 function generateTicketNumber(): string {
   const date = new Date();
@@ -55,14 +56,7 @@ export async function POST(request: NextRequest) {
         }
       });
 
-      // Audit Log
-      await prisma.activityLog.create({
-        data: {
-          tenantId,
-          user: user?.username || 'system',
-          action: `Created Laundry CS Ticket ${ticket.ticketId} for customer ${ticket.customerId}`
-        }
-      });
+      await AuditService.logAction(tenantId, user?.username || 'system', `Created Laundry CS Ticket ${ticket.ticketId} for customer ${ticket.customerId}`);
 
       return NextResponse.json(ticket, { status: 201 });
     } catch (error: any) {
