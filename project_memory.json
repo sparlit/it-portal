@@ -1,9 +1,10 @@
 {
-  "version": "1.4.0",
+  "version": "1.5.0",
   "project_name": "TSysLab Industrial-Grade IT & Laundry Ecosystem",
   "modules": {
     "core": {
       "status": "active",
+      "location": "/core",
       "description": "Shared authentication (JWT), RBAC, i18n, and Audit logging.",
       "metrics": {
         "latency": "< 100ms",
@@ -13,6 +14,7 @@
     },
     "landing_page": {
       "status": "active",
+      "location": "/frontend/landing",
       "description": "Modern front door for Al Rayes Laundry; gateways to IT and Laundry portals.",
       "metrics": {
         "LCP": "< 2.5s",
@@ -23,6 +25,7 @@
     },
     "it_portal": {
       "status": "active",
+      "location": "/portal-it",
       "description": "Asset Management, Infra Monitor, Secret Vault, and Ticketing.",
       "metrics": {
         "MTTR": "Tracking",
@@ -31,11 +34,17 @@
     },
     "laundry_portal": {
       "status": "active",
+      "location": "/portal-laundry",
       "description": "Order Lifecycle, Driver Logistics, CRM, and Pricing.",
       "metrics": {
         "takt_time": "Real-time tracking",
         "order_success_rate": "95%"
       }
+    },
+    "database": {
+      "status": "active",
+      "location": "/database",
+      "description": "Multi-tenant PostgreSQL/SQLite schemas and migrations."
     }
   },
   "migrations": [
@@ -45,7 +54,11 @@
     },
     {
       "id": "20240521_enhanced_v2_protocol",
-      "description": "Upgrading system to Enhanced V2 protocol with persistent memory and performance guarantees."
+      "description": "Upgrading system to Enhanced V2 protocol with persistent memory."
+    },
+    {
+      "id": "20240521_modular_reorganization",
+      "description": "Established modular boundaries and consolidated documentation into /docs."
     }
   ],
   "debt": [
@@ -54,5 +67,5 @@
       "severity": "medium"
     }
   ],
-  "last_action": "2024-05-21T09:00:00Z"
+  "last_action": "2024-05-21T10:30:00Z"
 }

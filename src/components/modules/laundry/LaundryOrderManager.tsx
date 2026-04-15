@@ -4,16 +4,14 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Package, Truck, CheckCircle, Search, Filter } from 'lucide-react'
-import { Input } from '@/components/ui/input'
+import { useI18n } from '@/lib/i18n/context'
+import { Plus, ShoppingBag, Clock, CheckCircle2, ChevronRight } from 'lucide-react'
 
 interface Order {
   id: string;
   orderNumber: string;
   status: string;
   totalAmount: number;
-  paymentStatus: string;
-  receivedAt: string;
   customer: {
     name: string;
     phone: string;
@@ -22,9 +20,9 @@ interface Order {
 }
 
 export function LaundryOrderManager() {
+  const { t } = useI18n()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
 
   useEffect(() => {
     async function fetchOrders() {
@@ -43,121 +41,117 @@ export function LaundryOrderManager() {
     fetchOrders()
   }, [])
 
-  const filteredOrders = orders.filter(order =>
-    order.orderNumber.toLowerCase().includes(search.toLowerCase()) ||
-    order.customer.name.toLowerCase().includes(search.toLowerCase()) ||
-    order.customer.phone.includes(search)
-  )
-
-  const getStatusColor = (status: string) => {
+  const getStatusStyle = (status: string) => {
     switch (status) {
-      case 'received': return 'bg-blue-100 text-blue-800 border-blue-200'
-      case 'processing': return 'bg-yellow-100 text-yellow-800 border-yellow-200'
-      case 'ready': return 'bg-green-100 text-green-800 border-green-200'
-      case 'delivered': return 'bg-gray-100 text-gray-800 border-gray-200'
-      default: return 'bg-gray-100 text-gray-800 border-gray-200'
+      case 'received': return 'bg-blue-50 text-blue-600 border-blue-200'
+      case 'processing': return 'bg-orange-50 text-orange-600 border-orange-200'
+      case 'ready': return 'bg-purple-50 text-purple-600 border-purple-200'
+      case 'delivered': return 'bg-green-50 text-green-600 border-green-200'
+      default: return 'bg-slate-50 text-slate-600 border-slate-200'
     }
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Order Management</h2>
-          <p className="text-muted-foreground">Track and manage laundry orders throughout their lifecycle.</p>
+          <h2 className="text-3xl font-bold tracking-tight text-slate-900">{t('orders')}</h2>
+          <p className="text-muted-foreground font-medium">Real-time operational workflow & lifecycle tracking.</p>
         </div>
-        <div className="flex w-full md:w-auto gap-2">
-          <div className="relative flex-1 md:w-64">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search orders..."
-              className="pl-8"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+        <Button className="bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/20">
+          <Plus className="mr-2 h-4 w-4" /> New Order
+        </Button>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="shadow-sm border-slate-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-bold uppercase tracking-widest text-slate-500">Inbound</CardTitle>
+            <ShoppingBag className="h-4 w-4 text-blue-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-black text-slate-900">{orders.filter(o => o.status === 'received').length}</div>
+          </CardContent>
+        </Card>
+        <Card className="shadow-sm border-slate-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-bold uppercase tracking-widest text-slate-500">Processing</CardTitle>
+            <Clock className="h-4 w-4 text-orange-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-black text-slate-900">{orders.filter(o => o.status === 'processing').length}</div>
+          </CardContent>
+        </Card>
+        <Card className="shadow-sm border-slate-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-bold uppercase tracking-widest text-slate-500">Ready</CardTitle>
+            <CheckCircle2 className="h-4 w-4 text-purple-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-black text-slate-900">{orders.filter(o => o.status === 'ready').length}</div>
+          </CardContent>
+        </Card>
+        <Card className="shadow-sm border-slate-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-bold uppercase tracking-widest text-slate-500">Completed</CardTitle>
+            <Badge variant="success" className="h-4 w-4 rounded-full p-0" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-black text-slate-900">{orders.filter(o => o.status === 'delivered').length}</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="border-slate-200 shadow-sm overflow-hidden">
+        <CardHeader className="bg-slate-50 border-b">
+          <CardTitle className="font-bold text-slate-800">Operational Queue</CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50 border-b">
+                <tr>
+                  <th className="text-left p-4 font-bold text-slate-500 uppercase tracking-widest text-[10px]">{t('order_number')}</th>
+                  <th className="text-left p-4 font-bold text-slate-500 uppercase tracking-widest text-[10px]">{t('customer_name')}</th>
+                  <th className="text-left p-4 font-bold text-slate-500 uppercase tracking-widest text-[10px]">{t('status')}</th>
+                  <th className="text-left p-4 font-bold text-slate-500 uppercase tracking-widest text-[10px]">Items</th>
+                  <th className="text-left p-4 font-bold text-slate-500 uppercase tracking-widest text-[10px]">{t('total_amount')}</th>
+                  <th className="text-right p-4 font-bold text-slate-500 uppercase tracking-widest text-[10px]">{t('actions')}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {loading ? (
+                  <tr><td colSpan={6} className="p-8 text-center animate-pulse text-slate-400 font-bold">{t('loading')}</td></tr>
+                ) : orders.length === 0 ? (
+                  <tr><td colSpan={6} className="p-8 text-center text-slate-400 font-medium">Queue is currently empty.</td></tr>
+                ) : (
+                  orders.map((order) => (
+                    <tr key={order.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="p-4 font-black text-slate-900">{order.orderNumber}</td>
+                      <td className="p-4">
+                        <div className="font-bold text-slate-800">{order.customer.name}</div>
+                        <div className="text-[10px] font-bold text-slate-400 uppercase">{order.customer.phone}</div>
+                      </td>
+                      <td className="p-4">
+                        <Badge variant="outline" className={`font-black uppercase text-[10px] tracking-widest ${getStatusStyle(order.status)}`}>
+                          {order.status}
+                        </Badge>
+                      </td>
+                      <td className="p-4 font-bold text-slate-600">{order.items.length} Units</td>
+                      <td className="p-4 font-mono font-black text-blue-600">QAR {order.totalAmount.toFixed(2)}</td>
+                      <td className="p-4 text-right">
+                        <Button variant="ghost" size="sm" className="font-bold text-blue-600 flex items-center gap-1 ml-auto">
+                          {t('view')} <ChevronRight className="h-3 w-3" />
+                        </Button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
-          <Button variant="outline">
-            <Filter className="mr-2 h-4 w-4" /> Filter
-          </Button>
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-            <Package className="mr-2 h-4 w-4" /> New Order
-          </Button>
-        </div>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="bg-blue-50/50">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-blue-600">Pending Pickup</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{orders.filter(o => o.status === 'received').length}</div>
-          </CardContent>
-        </Card>
-        <Card className="bg-yellow-50/50">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-yellow-600">In Process</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{orders.filter(o => o.status === 'processing' || o.status === 'sorting').length}</div>
-          </CardContent>
-        </Card>
-        <Card className="bg-green-50/50">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-green-600">Ready for Delivery</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{orders.filter(o => o.status === 'ready').length}</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="rounded-md border bg-card">
-        <div className="relative w-full overflow-auto">
-          <table className="w-full caption-bottom text-sm">
-            <thead className="[&_tr]:border-b">
-              <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Order #</th>
-                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Customer</th>
-                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Status</th>
-                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Items</th>
-                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Total</th>
-                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="[&_tr:last-child]:border-0">
-              {loading ? (
-                <tr><td colSpan={6} className="h-24 text-center">Loading orders...</td></tr>
-              ) : filteredOrders.length === 0 ? (
-                <tr><td colSpan={6} className="h-24 text-center">No orders found.</td></tr>
-              ) : (
-                filteredOrders.map((order) => (
-                  <tr key={order.id} className="border-b transition-colors hover:bg-muted/50">
-                    <td className="p-4 align-middle font-medium">{order.orderNumber}</td>
-                    <td className="p-4 align-middle">
-                      <div>
-                        <div className="font-medium">{order.customer.name}</div>
-                        <div className="text-xs text-muted-foreground">{order.customer.phone}</div>
-                      </div>
-                    </td>
-                    <td className="p-4 align-middle">
-                      <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${getStatusColor(order.status)}`}>
-                        {order.status}
-                      </span>
-                    </td>
-                    <td className="p-4 align-middle">{order.items.length} items</td>
-                    <td className="p-4 align-middle font-medium">QAR {order.totalAmount.toFixed(2)}</td>
-                    <td className="p-4 align-middle">
-                      <Button variant="ghost" size="sm">View</Button>
-                      <Button variant="ghost" size="sm" className="text-blue-600">Update</Button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

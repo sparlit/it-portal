@@ -53,7 +53,7 @@ TSysLab is an industrial-grade, multi-tenant ecosystem designed to manage IT Inf
 We use a **Shared Database / Shared Schema** model. Logical isolation is enforced via `tenantId` on every model.
 - **Pros**: Cost-effective, easier migrations, global reporting.
 - **Cons**: Requires strict RLS (Row Level Security) or Middleware enforcement to prevent data leakage.
-- **Implementation**: Handled via `withTenant` Higher-Order Function in API routes.
+- **Implementation**: Handled via `withRBAC` Higher-Order Function in API routes.
 
 ## 5. Security Protocol
 - **JWT**: Stateless session management via `jose`.
