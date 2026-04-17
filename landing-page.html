@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Al Rayes Laundry & Dry Cleaning | Qatar's Premier Care</title>
+    <!-- 100% Free Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@700;900&family=Plus+Jakarta+Sans:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        /* BASE STYLES & VARIABLES */
+        :root {
+            --primary: #0F172A;
+            --accent: #3B82F6;
+            --success: #10B981;
+            --bg: #F8FAFC;
+            --text: #1E293B;
+            --white: #FFFFFF;
+            --font-heading: 'Inter', sans-serif;
+            --font-body: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3 {
+            font-family: var(--font-heading);
+            color: var(--primary);
+            line-height: 1.1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* BUTTONS */
+        .btn {
+            display: inline-block;
+            padding: 16px 32px;
+            border-radius: 8px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            color: var(--white);
+            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-primary:hover {
+            background-color: #2563EB;
+            transform: translateY(-2px);
+        }
+
+        /* HERO SECTION */
+        .hero {
+            padding: 120px 0 80px;
+            text-align: center;
+            background: linear-gradient(180deg, #FFFFFF 0%, var(--bg) 100%);
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            margin-bottom: 24px;
+            letter-spacing: -2px;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            max-width: 700px;
+            margin: 0 auto 40px;
+            color: #64748B;
+        }
+
+        /* FEATURES SECTION */
+        .features {
+            padding: 100px 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+
+        .feature-card {
+            background: var(--white);
+            padding: 40px;
+            border-radius: 16px;
+            border: 1px solid #E2E8F0;
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--accent);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 16px;
+        }
+
+        /* TESTIMONIALS */
+        .testimonials {
+            padding: 100px 0;
+            background-color: var(--primary);
+            color: var(--white);
+            text-align: center;
+        }
+
+        .testimonials h2 {
+            color: var(--white);
+            font-size: 2.5rem;
+            margin-bottom: 60px;
+        }
+
+        .testimonial-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+        }
+
+        .testimonial-block {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 12px;
+            text-align: left;
+        }
+
+        .testimonial-block p {
+            font-style: italic;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+
+        .testimonial-author {
+            font-weight: 700;
+            color: var(--accent);
+            display: block;
+        }
+
+        /* CONTACT CTA */
+        .contact-cta {
+            padding: 100px 0;
+            text-align: center;
+        }
+
+        .contact-cta h2 {
+            font-size: 3rem;
+            margin-bottom: 24px;
+        }
+
+        .contact-cta p {
+            font-size: 1.25rem;
+            margin-bottom: 40px;
+            color: #64748B;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .contact-cta h2 { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HERO SECTION -->
+    <section class="hero">
+        <div class="container">
+            <h1>Pristine Clothes.<br>Professional Care.</h1>
+            <p>Qatar's most advanced laundry service. Get your clothes back perfectly cleaned and pressed within 24 hours—delivered to your doorstep.</p>
+            <a href="#" class="btn btn-primary">Book Your First Pickup</a>
+        </div>
+    </section>
+
+    <!-- FEATURES SECTION -->
+    <section class="container features">
+        <div class="feature-card">
+            <span class="feature-icon">✨</span>
+            <h3>Reclaim Your Weekend</h3>
+            <p>Stop spending hours on laundry. Spend them with family while our professionals handle the cleaning and pressing.</p>
+        </div>
+        <div class="feature-card">
+            <span class="feature-icon">👔</span>
+            <h3>Look Sharp Instantly</h3>
+            <p>Arrive at your meetings with crisp, professionally pressed attire that commands respect and builds confidence.</p>
+        </div>
+        <div class="feature-card">
+            <span class="feature-icon">🌿</span>
+            <h3>Extend Wardrobe Life</h3>
+            <p>Our gentle, eco-friendly cleaning methods keep your favorite garments looking new for years, not months.</p>
+        </div>
+    </section>
+
+    <!-- TESTIMONIAL SECTION -->
+    <section class="testimonials">
+        <div class="container">
+            <h2>Trusted by Thousands in Qatar</h2>
+            <div class="testimonial-grid">
+                <div class="testimonial-block">
+                    <p>"The best dry cleaning service in Doha. My suits always come back looking brand new."</p>
+                    <span class="testimonial-author">- Ahmed K.</span>
+                </div>
+                <div class="testimonial-block">
+                    <p>"Incredible turnaround time. The 24-hour delivery is a lifesaver for busy professionals."</p>
+                    <span class="testimonial-author">- Sarah M.</span>
+                </div>
+                <div class="testimonial-block">
+                    <p>"Extremely professional staff and easy booking through the portal. Highly recommended!"</p>
+                    <span class="testimonial-author">- John D.</span>
+                </div>
+                <div class="testimonial-block">
+                    <p>"They handled my expensive evening gowns with such care. Truly a luxury service."</p>
+                    <span class="testimonial-author">- Fatima H.</span>
+                </div>
+                <div class="testimonial-block">
+                    <p>"The corporate pricing is very competitive. Perfect for our hotel group's requirements."</p>
+                    <span class="testimonial-author">- Robert S.</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTACT CALL TO ACTION -->
+    <section class="contact-cta">
+        <div class="container">
+            <h2>Ready for a Cleaner Life?</h2>
+            <p>Join the Al Rayes family today and experience the difference of industrial-grade precision.</p>
+            <a href="#" class="btn btn-primary">Start Your Order Now</a>
+        </div>
+    </section>
+
+</body>
+</html>

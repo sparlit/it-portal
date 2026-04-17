@@ -10,7 +10,7 @@ This document provides an exhaustive map of all portals, functional modules, and
 ---
 
 ## 2. Departmental Portals (UI)
-Each portal is isolated with its own authentication gateway and specialized dashboard.
+Each portal is isolated with its own authentication gateway and specialized dashboard. All portals utilize 100% Free and Open Source (FOSS) technologies and feature unique visual identities as specified in `docs/PORTALS_DETAIL.md`.
 
 ### A. System Administration Portal
 - **Admin Dashboard** (`/portal/admin`)
@@ -93,6 +93,16 @@ Each portal is isolated with its own authentication gateway and specialized dash
   - OEE Metrics (Overall Equipment Effectiveness)
   - Procurement Indent
   - Process Data Analytics
+
+### I. Additional Specialized Portals (Planned/Integrated)
+- **Marketing Portal**: Campaign & Asset management.
+- **Customer Service Portal**: Ticket & Live Chat resolution.
+- **Operations Portal**: Daily workflow & efficiency tracking.
+- **Human Resources Portal**: Employee lifecycle & payroll.
+- **Business Development Portal**: Partnership & market growth.
+- **Communications Portal**: Internal/External PR management.
+- **Security & Surveillance Portal**: Real-time asset & personnel protection.
+- **Housekeeping Portal**: Facility hygiene & stock management.
 
 ---
 
