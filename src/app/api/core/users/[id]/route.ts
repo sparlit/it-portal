@@ -7,7 +7,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   return withTenant(request, async (tenantId: string) => {
-    const user = await prisma.user.findFirst({
+    const user = await prisma.cORE_User.findFirst({
       where: {
         id: params.id,
         tenantId
@@ -38,7 +38,7 @@ export async function PUT(
   return withTenant(request, async (tenantId: string) => {
     const body = await request.json();
 
-    const user = await prisma.user.updateMany({
+    const user = await prisma.cORE_User.updateMany({
       where: {
         id: params.id,
         tenantId

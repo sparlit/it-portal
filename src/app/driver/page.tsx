@@ -1,112 +1,85 @@
-"use client"
+'use client';
 
-import { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Truck, CheckCircle, Navigation, Globe } from 'lucide-react'
-import { useI18n } from '@/lib/i18n/context'
+import React from 'react';
+import { Navigation, MapPin, Truck, Phone, CheckCircle, AlertCircle } from 'lucide-react';
 
-export default function DriverDashboard() {
-  const { t, language, setLanguage } = useI18n()
-  const [deliveries, setDeliveries] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    async function fetchDeliveries() {
-      try {
-        const response = await fetch('/api/laundry/orders?status=ready')
-        const data = await response.json()
-        if (Array.isArray(data)) {
-          setDeliveries(data)
-        }
-      } catch (error) {
-        console.error('Failed to fetch deliveries:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchDeliveries()
-  }, [])
-
-  const updateStatus = async (orderId: string, status: string) => {
-    try {
-      await fetch(`/api/laundry/orders/${orderId}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status })
-      })
-      setDeliveries(deliveries.filter(d => d.id !== orderId))
-    } catch (error) {
-      console.error('Update failed:', error)
-    }
-  }
+export default function DriverApp() {
+  const currentTrip = {
+    id: 'TRIP-772',
+    from: 'Central Warehouse',
+    to: 'Retail Outlet #09',
+    cargo: 'Clean Linen - 200KG',
+    status: 'en_route'
+  };
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 pb-20">
-      <header className="mb-6 flex justify-between items-start">
-        <div>
-          <h1 className="text-2xl font-black flex items-center gap-2 text-slate-900 tracking-tight">
-            <Truck className="h-6 w-6 text-blue-600" /> {t('driver_dashboard')}
-          </h1>
-          <p className="text-slate-500 font-bold uppercase text-[10px] tracking-widest">{t('logistics_mgmt')}</p>
+    <div className="min-h-screen bg-emerald-50 text-slate-900 pb-20 font-sans">
+      <header className="bg-emerald-600 text-white p-8 rounded-b-[50px] shadow-xl">
+        <div className="flex justify-between items-start mb-6">
+           <div>
+             <h1 className="text-2xl font-black italic tracking-tighter uppercase">Logistics Live</h1>
+             <p className="text-[10px] font-bold opacity-80 uppercase tracking-widest">Operator: Mike Ross</p>
+           </div>
+           <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
+              <Truck size={24} />
+           </div>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-slate-500 font-bold flex items-center gap-2"
-          onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
-        >
-          <Globe className="h-4 w-4" />
-          {language === 'en' ? 'AR' : 'EN'}
-        </Button>
+
+        <div className="bg-white/10 p-4 rounded-2xl border border-white/20 backdrop-blur-sm">
+           <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest mb-2">
+              <span>Current Task</span>
+              <span className="text-emerald-300"># {currentTrip.id}</span>
+           </div>
+           <div className="flex items-center gap-3">
+              <div className="w-2 h-2 bg-emerald-400 rounded-full animate-ping" />
+              <p className="font-bold">{currentTrip.to}</p>
+           </div>
+        </div>
       </header>
 
-      <div className="space-y-4">
-        {loading ? (
-          <p className="p-12 text-center animate-pulse text-slate-400 font-bold">{t('loading')}</p>
-        ) : deliveries.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-2xl border-2 border-dashed border-slate-200">
-            <p className="text-slate-400 font-bold uppercase tracking-widest text-sm">{t('no_deliveries')}</p>
-          </div>
-        ) : (
-          deliveries.map((delivery) => (
-            <Card key={delivery.id} className="overflow-hidden border-slate-200 shadow-sm hover:shadow-md transition-all">
-              <CardHeader className="bg-white border-b py-3">
-                <div className="flex justify-between items-center">
-                  <Badge variant="outline" className="font-black text-blue-600 border-blue-100">{delivery.orderNumber}</Badge>
-                  <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">{t('ready_for_delivery')}</span>
-                </div>
-              </CardHeader>
-              <CardContent className="p-5 space-y-5">
-                <div>
-                  <h3 className="font-black text-xl text-slate-900 tracking-tight">{delivery.customer?.name}</h3>
-                  <p className="text-sm text-slate-600 flex items-start gap-1.5 mt-2 font-bold leading-snug">
-                    <Navigation className="h-4 w-4 mt-0.5 text-blue-500 shrink-0" />
-                    {delivery.logistics?.address || 'No address provided'}
-                  </p>
-                </div>
+      <main className="p-6 space-y-6 -mt-6">
+        <div className="bg-white p-8 rounded-[40px] shadow-sm border border-emerald-100 relative overflow-hidden">
+           <div className="absolute top-0 right-0 p-4 bg-emerald-500 text-white rounded-bl-3xl">
+              <Navigation size={20} />
+           </div>
 
-                <div className="grid grid-cols-2 gap-4 pt-2">
-                  <Button
-                    variant="outline"
-                    className="w-full border-slate-200 font-black text-xs uppercase tracking-widest h-12 hover:bg-slate-50"
-                    onClick={() => updateStatus(delivery.id, 'out-for-delivery')}
-                  >
-                    {t('start_trip')}
-                  </Button>
-                  <Button
-                    className="w-full bg-green-600 hover:bg-green-700 text-white font-black text-xs uppercase tracking-widest h-12 shadow-lg shadow-green-200"
-                    onClick={() => updateStatus(delivery.id, 'delivered')}
-                  >
-                    <CheckCircle className="mr-2 h-4 w-4" /> {t('delivered')}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
-      </div>
+           <div className="space-y-6">
+              <div className="flex gap-4">
+                 <div className="flex flex-col items-center">
+                    <div className="w-4 h-4 rounded-full border-2 border-slate-300" />
+                    <div className="w-0.5 h-12 bg-slate-200 border-dashed" />
+                    <MapPin size={16} className="text-emerald-500" />
+                 </div>
+                 <div className="flex flex-col justify-between py-0.5">
+                    <p className="text-[10px] font-black uppercase text-slate-400">Pickup</p>
+                    <p className="text-sm font-bold">{currentTrip.from}</p>
+                    <p className="text-[10px] font-black uppercase text-slate-400 mt-4">Destination</p>
+                    <p className="text-sm font-bold">{currentTrip.to}</p>
+                 </div>
+              </div>
+           </div>
+
+           <div className="mt-8 flex gap-3">
+              <button className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2">
+                 <Phone size={14} /> Call Manager
+              </button>
+              <button className="flex-1 py-4 bg-emerald-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2">
+                 <CheckCircle size={14} /> Delivered
+              </button>
+           </div>
+        </div>
+
+        <button className="w-full p-6 bg-amber-500 rounded-[30px] flex items-center justify-between text-white font-black uppercase tracking-widest text-[10px] shadow-lg">
+           <span>Report Vehicle Issue</span>
+           <AlertCircle size={20} />
+        </button>
+      </main>
+
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 p-6 flex justify-around items-center">
+         <Navigation size={24} className="text-emerald-600" />
+         <Truck size={24} className="text-slate-300" />
+         <CheckCircle size={24} className="text-slate-300" />
+      </nav>
     </div>
-  )
+  );
 }

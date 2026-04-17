@@ -24,7 +24,7 @@ export async function PATCH(
     }
 
     try {
-      const order = await prisma.laundryOrder.update({
+      const order = await prisma.lND_Order.update({
         where: { id: orderId, tenantId },
         data: {
           status,

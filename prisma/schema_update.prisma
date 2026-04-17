@@ -1,0 +1,32 @@
+// Add to Asset model
+// parentId String?
+// parent Asset? @relation("AssetHierarchy", fields: [parentId], references: [id])
+// children Asset[] @relation("AssetHierarchy")
+
+// New models for OEE and Production Pipeline
+model ProcessStage {
+  id        String   @id @default(cuid())
+  orderId   String
+  order     LaundryOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  stage     String   // 'Sorting', 'Washing', 'Drying', 'Ironing', 'Folding', 'Packing'
+  status    String   @default("pending") // 'pending', 'in_progress', 'completed'
+  startedAt DateTime?
+  endedAt   DateTime?
+  notes     String? @db.Text
+  updatedAt DateTime @updatedAt
+}
+
+model MachineMetric {
+  id          String   @id @default(cuid())
+  equipmentId String
+  equipment   LaundryEquipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  timestamp   DateTime @default(now())
+
+  availability Float    // 0 to 1
+  performance  Float    // 0 to 1
+  quality      Float    // 0 to 1
+  oee          Float    // calculated: A * P * Q
+
+  powerUsage   Float?   // in kWh
+  waterUsage   Float?   // in Liters
+}

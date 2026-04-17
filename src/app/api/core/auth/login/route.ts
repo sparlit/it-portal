@@ -2,16 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import { encrypt } from '@/lib/auth';
+import { PortalType, hasPortalAccess } from '@/lib/rbac';
 
 export async function POST(request: NextRequest) {
   try {
-    const { username, password } = await request.json();
+    const { username, password, portal } = await request.json();
 
     if (!username || !password) {
       return NextResponse.json({ error: 'Username and password are required' }, { status: 400 });
     }
 
-    const user = await prisma.user.findFirst({
+    const user = await prisma.cORE_User.findFirst({
       where: {
         OR: [
           { username: username.toLowerCase() },
@@ -25,6 +26,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
+    // Portal-specific access check
+    if (portal && portal !== 'admin') {
+      if (!hasPortalAccess(user, portal as PortalType)) {
+        return NextResponse.json({ error: `You do not have permission to access the ${portal} portal.` }, { status: 403 });
+      }
+    }
+
+    // SuperAdmin only for admin portal
+    if (portal === 'admin' && user.role !== 'SUPERADMIN') {
+        return NextResponse.json({ error: 'Access restricted to System Administrators.' }, { status: 403 });
+    }
+
     const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
     const session = await encrypt({
       user: {
@@ -32,7 +45,8 @@ export async function POST(request: NextRequest) {
         username: user.username,
         name: user.name,
         role: user.role,
-        tenantId: user.tenantId
+        tenantId: user.tenantId,
+        portalPermissions: user.portalPermissions
       },
       expires
     });

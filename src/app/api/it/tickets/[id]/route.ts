@@ -7,7 +7,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   return withTenant(request, async (tenantId: string) => {
-    const ticket = await prisma.iTTicket.findFirst({
+    const ticket = await prisma.iT_Ticket.findFirst({
       where: {
         id: params.id,
         tenantId
@@ -29,7 +29,7 @@ export async function PUT(
   return withTenant(request, async (tenantId: string) => {
     const body = await request.json();
 
-    const ticket = await prisma.iTTicket.updateMany({
+    const ticket = await prisma.iT_Ticket.updateMany({
       where: {
         id: params.id,
         tenantId
@@ -50,7 +50,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Ticket not found' }, { status: 404 });
     }
 
-    const updatedTicket = await prisma.iTTicket.findUnique({
+    const updatedTicket = await prisma.iT_Ticket.findUnique({
       where: { id: params.id }
     });
 
@@ -63,7 +63,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   return withTenant(request, async (tenantId: string) => {
-    const result = await prisma.iTTicket.deleteMany({
+    const result = await prisma.iT_Ticket.deleteMany({
       where: {
         id: params.id,
         tenantId

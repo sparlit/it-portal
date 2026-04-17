@@ -1,528 +1,344 @@
-// Production-Grade Multi-tenant Prisma Schema
-// TSysLab Industrial-Grade IT & Laundry Ecosystem
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-// ==========================================
-// CORE MODULE: Multi-tenancy & Auth
-// ==========================================
-
-model Tenant {
+model CORE_Tenant {
   id            String   @id @default(cuid())
   name          String
   slug          String   @unique
-  address       String?
-  phone         String?
-  email         String?
-  logo          String?
-  plan          String   @default("enterprise")
-  status        String   @default("active")
+  address       String?  @db.Text
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  // Relations
-  users             User[]
-  assets            Asset[]
-  itTickets         ITTicket[]
-  laundryTickets    LaundryTicket[]
-  laundryCustomers  LaundryCustomer[]
-  laundryOrders     LaundryOrder[]
-  laundryServices   LaundryService[]
-  laundrySuppliers  LaundrySupplier[]
-  laundryEquipment  LaundryEquipment[]
-  visitors          Visitor[]
-  meetings          Meeting[]
-  licenses          License[]
-  backups           Backup[]
-  dailyChecks       DailyCheck[]
-  credentials       Credential[]
-  quickNotes        QuickNote[]
-  notebookPages     NotebookPage[]
-  calendarEvents    CalendarEvent[]
-  knowledgeArticles KnowledgeArticle[]
-  activityLogs      ActivityLog[]
-  announcements     Announcement[]
-  budgetItems       BudgetItem[]
-  programmeCharters ProgrammeCharter[]
-  systemAlerts      SystemAlert[]
-  settings          Setting[]
-  serverMonitors    ServerMonitor[]
+  users             CORE_User[]
+  notifications     CORE_Notification[]
+  auditLogs         CORE_AuditLog[]
+  systemAlerts      CORE_SystemAlert[]
+  settings          CORE_Setting[]
+  visitors          CORE_Visitor[]
+
+  it_assets         IT_Asset[]
+  it_tickets        IT_Ticket[]
+  it_licenses       IT_License[]
+  it_credentials    IT_Credential[]
+  it_monitors       IT_ServerMonitor[]
+
+  lnd_customers     LND_Customer[]
+  lnd_orders        LND_Order[]
+  lnd_services      LND_Service[]
+  lnd_tickets       LND_Ticket[]
+
+  st_items          STORES_Item[]
+  st_requisitions   STORES_Requisition[]
+
+  maint_tasks       MAINT_Task[]
+
+  trans_vehicles    TRANS_Vehicle[]
+  trans_trips       TRANS_Trip[]
+
+  crm_leads         CRM_Lead[]
+
+  prod_batches      PROD_Batch[]
+  prod_metrics      PROD_MachineMetric[]
 }
 
-model User {
-  id        String   @id @default(cuid())
-  username  String   @unique
-  password  String
-  name      String
-  email     String?
-  role      String   @default("user") // 'admin', 'it_manager', 'laundry_manager', 'staff', 'user'
-  status    String   @default("active")
+model CORE_User {
+  id               String      @id @default(cuid())
+  username         String      @unique
+  password         String
+  name             String
+  email            String?
+  role             String      @default("USER")
+  status           String      @default("ACTIVE")
+  isThemePermanent Boolean     @default(false)
+  themeConfig      Json?
+  portalPermissions Json?
+  tenantId         String
+  tenant           CORE_Tenant @relation(fields: [tenantId], references: [id])
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+}
 
+model CORE_Notification {
+  id        String      @id @default(cuid())
   tenantId  String
-  tenant    Tenant   @relation(fields: [tenantId], references: [id])
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([tenantId])
+  tenant    CORE_Tenant @relation(fields: [tenantId], references: [id])
+  userId    String
+  title     String
+  message   String      @db.Text
+  type      String      @default("INFO")
+  isRead    Boolean     @default(false)
+  createdAt DateTime    @default(now())
 }
 
-// ==========================================
-// IT MANAGEMENT MODULE
-// ==========================================
-
-model Asset {
-  id            String   @id @default(cuid())
-  tenantId      String
-  tenant        Tenant   @relation(fields: [tenantId], references: [id])
-
-  type          String   // 'computer', 'server', 'printer', 'network', 'other'
-  name          String
-  model         String
-  serialNumber  String
-  location      String
-  ipAddress     String?
-  status        String   @default("active")
-  assignedTo    String?
-  purchaseDate  String?
-  warrantyEnd   String?
-  notes         String?
-  
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  @@unique([tenantId, serialNumber])
-  @@index([tenantId])
+model CORE_AuditLog {
+  id        String      @id @default(cuid())
+  tenantId  String
+  tenant    CORE_Tenant @relation(fields: [tenantId], references: [id])
+  userId    String
+  action    String
+  entity    String
+  details   Json?
+  timestamp DateTime    @default(now())
 }
 
-model ITTicket {
-  id          String   @id @default(cuid())
-  tenantId    String
-  tenant      Tenant   @relation(fields: [tenantId], references: [id])
-
-  ticketId    String   // TKT-IT-001 format
-  title       String
-  description String?
-  priority    String   @default("medium")
-  status      String   @default("open")
-  category    String?
-  requester   String
-  assignedTo  String?
-  resolution  String?
-  slaDeadline String?
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@unique([tenantId, ticketId])
-  @@index([tenantId])
+model CORE_SystemAlert {
+  id        String      @id @default(cuid())
+  tenantId  String
+  tenant    CORE_Tenant @relation(fields: [tenantId], references: [id])
+  title     String
+  message   String?     @db.Text
+  createdAt DateTime    @default(now())
 }
 
-// ==========================================
-// LAUNDRY MANAGEMENT MODULE
-// ==========================================
-
-model LaundryCustomer {
-  id          String   @id @default(cuid())
-  tenantId    String
-  tenant      Tenant   @relation(fields: [tenantId], references: [id])
-
-  name        String
-  email       String?
-  phone       String
-  address     String?
-  loyaltyTier String   @default("standard")
-  totalOrders Int      @default(0)
-  notes       String?
-
-  orders      LaundryOrder[]
-  tickets     LaundryTicket[]
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([tenantId, phone])
-}
-
-model LaundryService {
-  id          String   @id @default(cuid())
-  tenantId    String
-  tenant      Tenant   @relation(fields: [tenantId], references: [id])
-
-  name        String   // 'Dry Clean', 'Wash & Fold', 'Ironing', 'Stain Removal'
-  category    String   // 'Garment', 'Bedding', 'Curtains'
-  price       Float
-  unit        String   @default("piece") // 'piece', 'kg'
-  estimatedTime Int    @default(24) // in hours
-
-  orderItems  LaundryOrderItem[]
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([tenantId])
-}
-
-model LaundryOrder {
-  id            String   @id @default(cuid())
-  tenantId      String
-  tenant        Tenant   @relation(fields: [tenantId], references: [id])
-
-  orderNumber   String   // LND-001
-  customerId    String
-  customer      LaundryCustomer @relation(fields: [customerId], references: [id])
-
-  status        String   @default("received") // 'received', 'sorting', 'processing', 'quality-check', 'ready', 'out-for-delivery', 'delivered', 'cancelled'
-  totalAmount   Float    @default(0)
-  paymentStatus String   @default("pending") // 'pending', 'partial', 'paid', 'refunded'
-
-  items         LaundryOrderItem[]
-  logistics     LaundryLogistics?
-  payments      LaundryPayment[]
-
-  receivedAt    DateTime @default(now())
-  expectedDate  DateTime?
-  deliveredAt   DateTime?
-
-  notes         String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  @@unique([tenantId, orderNumber])
-  @@index([tenantId, customerId])
-}
-
-model LaundryOrderItem {
-  id          String   @id @default(cuid())
-  orderId     String
-  order       LaundryOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
-
-  serviceId   String
-  service     LaundryService @relation(fields: [serviceId], references: [id])
-
-  quantity    Int      @default(1)
-  unitPrice   Float
-  subtotal    Float
-  garmentType String?  // 'Shirt', 'Suit', 'Blanket'
-  color       String?
-  brand       String?
-  specialInstructions String?
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model LaundryLogistics {
-  id            String   @id @default(cuid())
-  orderId       String   @unique
-  order         LaundryOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
-
-  pickupScheduledAt  DateTime?
-  pickupCompletedAt   DateTime?
-  deliveryScheduledAt DateTime?
-  deliveryCompletedAt  DateTime?
-
-  driverName    String?
-  vehicleId     String?
-  address       String
-
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-}
-
-model LaundryPayment {
-  id            String   @id @default(cuid())
-  orderId       String
-  order         LaundryOrder @relation(fields: [orderId], references: [id])
-
-  amount        Float
-  method        String   // 'cash', 'card', 'online', 'wallet'
-  transactionId String?
-  status        String   @default("completed")
-
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-}
-
-model LaundryTicket {
-  id          String   @id @default(cuid())
-  tenantId    String
-  tenant      Tenant   @relation(fields: [tenantId], references: [id])
-
-  ticketId    String   // CS-001
-  customerId  String
-  customer    LaundryCustomer @relation(fields: [customerId], references: [id])
-
-  orderId     String?
-  subject     String
-  message     String
-  priority    String   @default("medium")
-  status      String   @default("open")
-  type        String   @default("complaint") // 'complaint', 'feedback', 'inquiry'
-  resolution  String?
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@unique([tenantId, ticketId])
-  @@index([tenantId, customerId])
-}
-
-model LaundrySupplier {
-  id            String   @id @default(cuid())
-  tenantId      String
-  tenant        Tenant   @relation(fields: [tenantId], references: [id])
-  
-  name          String
-  contactPerson String?
-  phone         String?
-  email         String?
-  category      String   // 'Chemicals', 'Machinery', 'Packaging', 'Uniforms'
-  address       String?
-  
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  @@index([tenantId])
-}
-
-model LaundryEquipment {
-  id            String   @id @default(cuid())
-  tenantId      String
-  tenant        Tenant   @relation(fields: [tenantId], references: [id])
-
-  name          String   // 'Washer Extractor 1', 'Dryer 2'
-  model         String?
-  serialNumber  String?
-  installationDate DateTime?
-  lastServiceDate DateTime?
-  nextServiceDate DateTime?
-  status        String   @default("operational") // 'operational', 'down', 'maintenance'
-  
-  repairs       LaundryRepair[]
-  
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  @@index([tenantId])
-}
-
-model LaundryRepair {
-  id            String   @id @default(cuid())
-  equipmentId   String
-  equipment     LaundryEquipment @relation(fields: [equipmentId], references: [id])
-
-  description   String
-  cost          Float    @default(0)
-  technician    String?
-  repairDate    DateTime
-  status        String   @default("completed") // 'pending', 'in-progress', 'completed'
-
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-}
-
-// ==========================================
-// SHARED UTILITY MODELS (Migrated)
-// ==========================================
-
-model Visitor {
-  id            String   @id @default(cuid())
-  tenantId      String
-  tenant        Tenant   @relation(fields: [tenantId], references: [id])
-  name          String
-  company       String?
-  purpose       String?
-  checkInTime   String?
-  checkOutTime  String?
-  status        String   @default("expected")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  @@index([tenantId])
-}
-
-model Meeting {
-  id            String   @id @default(cuid())
-  tenantId      String
-  tenant        Tenant   @relation(fields: [tenantId], references: [id])
-  title         String
-  date          String
-  time          String
-  status        String   @default("scheduled")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  @@index([tenantId])
-}
-
-model License {
-  id            String   @id @default(cuid())
-  tenantId      String
-  tenant        Tenant   @relation(fields: [tenantId], references: [id])
-  software      String
-  expiryDate    String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  @@index([tenantId])
-}
-
-model Backup {
-  id            String   @id @default(cuid())
-  tenantId      String
-  tenant        Tenant   @relation(fields: [tenantId], references: [id])
-  name          String
-  status        String   @default("success")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  @@index([tenantId])
-}
-
-model DailyCheck {
-  id            String   @id @default(cuid())
-  tenantId      String
-  tenant        Tenant   @relation(fields: [tenantId], references: [id])
-  task          String
-  completed     Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  @@index([tenantId])
-}
-
-model Credential {
-  id            String   @id @default(cuid())
-  tenantId      String
-  tenant        Tenant   @relation(fields: [tenantId], references: [id])
-  system        String
-  username      String?
-  password      String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  @@index([tenantId])
-}
-
-model QuickNote {
-  id            String   @id @default(cuid())
-  tenantId      String
-  tenant        Tenant   @relation(fields: [tenantId], references: [id])
-  title         String
-  content       String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  @@index([tenantId])
-}
-
-model NotebookPage {
-  id            String   @id @default(cuid())
-  tenantId      String
-  tenant        Tenant   @relation(fields: [tenantId], references: [id])
-  title         String
-  content       String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  @@index([tenantId])
-}
-
-model CalendarEvent {
-  id            String   @id @default(cuid())
-  tenantId      String
-  tenant        Tenant   @relation(fields: [tenantId], references: [id])
-  title         String
-  date          String
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  @@index([tenantId])
-}
-
-model KnowledgeArticle {
-  id            String   @id @default(cuid())
-  tenantId      String
-  tenant        Tenant   @relation(fields: [tenantId], references: [id])
-  title         String
-  content       String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  @@index([tenantId])
-}
-
-model ActivityLog {
-  id            String   @id @default(cuid())
-  tenantId      String
-  tenant        Tenant   @relation(fields: [tenantId], references: [id])
-  user          String
-  action        String
-  timestamp     DateTime @default(now())
-  @@index([tenantId])
-}
-
-model Announcement {
-  id            String   @id @default(cuid())
-  tenantId      String
-  tenant        Tenant   @relation(fields: [tenantId], references: [id])
-  title         String
-  content       String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  @@index([tenantId])
-}
-
-model BudgetItem {
-  id            String   @id @default(cuid())
-  tenantId      String
-  tenant        Tenant   @relation(fields: [tenantId], references: [id])
-  category      String
-  amount        Float
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  @@index([tenantId])
-}
-
-model ProgrammeCharter {
-  id            String   @id @default(cuid())
-  tenantId      String
-  tenant        Tenant   @relation(fields: [tenantId], references: [id])
-  name          String
-  status        String   @default("draft")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  @@index([tenantId])
-}
-
-model SystemAlert {
-  id            String   @id @default(cuid())
-  tenantId      String
-  tenant        Tenant   @relation(fields: [tenantId], references: [id])
-  title         String
-  message       String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  @@index([tenantId])
-}
-
-model Setting {
-  id            String   @id @default(cuid())
-  tenantId      String
-  tenant        Tenant   @relation(fields: [tenantId], references: [id])
-  key           String
-  value         String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  @@index([tenantId])
+model CORE_Setting {
+  id        String      @id @default(cuid())
+  tenantId  String
+  tenant    CORE_Tenant @relation(fields: [tenantId], references: [id])
+  key       String
+  value     String?     @db.Text
   @@unique([tenantId, key])
 }
 
-model ServerMonitor {
+model IT_Asset {
+  id            String      @id @default(cuid())
+  tenantId      String
+  tenant        CORE_Tenant @relation(fields: [tenantId], references: [id])
+  name          String
+  type          String
+  model         String?
+  serialNumber  String      @unique
+  location      String?
+  status        String      @default("ACTIVE")
+  ipAddress     String?
+  notes         String?     @db.Text
+  purchaseDate  String?
+  warrantyEnd   String?
+  parentId      String?
+  parent        IT_Asset?   @relation("AssetHierarchy", fields: [parentId], references: [id])
+  children      IT_Asset[]  @relation("AssetHierarchy")
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model IT_Ticket {
+  id          String      @id @default(cuid())
+  tenantId    String
+  tenant      CORE_Tenant @relation(fields: [tenantId], references: [id])
+  ticketId    String      @unique
+  title       String
+  description String?     @db.Text
+  priority    String      @default("MEDIUM")
+  status      String      @default("OPEN")
+  requester   String
+  assignedTo  String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model IT_License {
   id            String   @id @default(cuid())
   tenantId      String
-  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  tenant        CORE_Tenant @relation(fields: [tenantId], references: [id])
+  software      String
+  expiryDate    String?
+  createdAt     DateTime @default(now())
+}
+
+model IT_Credential {
+  id            String   @id @default(cuid())
+  tenantId      String
+  tenant        CORE_Tenant @relation(fields: [tenantId], references: [id])
+  system        String
+  createdAt     DateTime @default(now())
+}
+
+model IT_ServerMonitor {
+  id            String   @id @default(cuid())
+  tenantId      String
+  tenant        CORE_Tenant @relation(fields: [tenantId], references: [id])
   name          String
-  ip            String
-  status        String   @default("online")
+  status        String   @default("ONLINE")
   updatedAt     DateTime @updatedAt
-  @@index([tenantId])
+}
+
+model LND_Customer {
+  id        String       @id @default(cuid())
+  tenantId  String
+  tenant    CORE_Tenant  @relation(fields: [tenantId], references: [id])
+  name      String
+  phone     String
+  email     String?
+  orders    LND_Order[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+}
+
+model LND_Order {
+  id           String         @id @default(cuid())
+  tenantId     String
+  tenant       CORE_Tenant    @relation(fields: [tenantId], references: [id])
+  customerId   String
+  customer     LND_Customer   @relation(fields: [customerId], references: [id])
+  orderNumber  String         @unique
+  status       String         @default("RECEIVED")
+  totalAmount  Float          @default(0)
+  notes        String?        @db.Text
+  expectedDate DateTime?
+  receivedAt   DateTime       @default(now())
+  deliveredAt  DateTime?
+  stages       LND_Stage[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}
+
+model LND_Stage {
+  id        String    @id @default(cuid())
+  orderId   String
+  order     LND_Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  name      String
+  status    String    @default("PENDING")
+  updatedAt DateTime  @updatedAt
+}
+
+model LND_Service {
+  id        String      @id @default(cuid())
+  tenantId  String
+  tenant    CORE_Tenant @relation(fields: [tenantId], references: [id])
+  name      String
+  category  String
+  price     Float
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model LND_Ticket {
+  id          String   @id @default(cuid())
+  tenantId    String
+  tenant      CORE_Tenant @relation(fields: [tenantId], references: [id])
+  subject     String
+  status      String   @default("OPEN")
+  createdAt   DateTime @default(now())
+}
+
+model STORES_Item {
+  id            String      @id @default(cuid())
+  tenantId      String
+  tenant        CORE_Tenant @relation(fields: [tenantId], references: [id])
+  sku           String      @unique
+  name          String
+  category      String
+  unit          String      @default("PCS")
+  currentStock  Float       @default(0)
+  minStockLevel Float       @default(10)
+  reorderPoint  Float?      @default(15)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model STORES_Requisition {
+  id            String      @id @default(cuid())
+  tenantId      String
+  tenant        CORE_Tenant @relation(fields: [tenantId], references: [id])
+  requisitionNo String      @unique
+  department    String
+  requestedBy   String
+  status        String      @default("PENDING")
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  approvals     STORES_ApprovalAction[]
+}
+
+model STORES_ApprovalAction {
+  id            String   @id @default(cuid())
+  requisitionId String
+  requisition   STORES_Requisition @relation(fields: [requisitionId], references: [id])
+  userId        String
+  action        String
+  createdAt     DateTime @default(now())
+}
+
+model MAINT_Task {
+  id        String      @id @default(cuid())
+  tenantId  String
+  tenant    CORE_Tenant @relation(fields: [tenantId], references: [id])
+  title     String
+  type      String      @default("CORRECTIVE")
+  priority  String      @default("MEDIUM")
+  status    String      @default("OPEN")
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model TRANS_Vehicle {
+  id          String      @id @default(cuid())
+  tenantId    String
+  tenant      CORE_Tenant @relation(fields: [tenantId], references: [id])
+  plateNumber String      @unique
+  model       String
+  make        String?
+  status      String      @default("AVAILABLE")
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model TRANS_Trip {
+  id            String   @id @default(cuid())
+  tenantId      String
+  tenant        CORE_Tenant @relation(fields: [tenantId], references: [id])
+  startLocation String
+  endLocation   String
+  status        String   @default("SCHEDULED")
+  createdAt     DateTime @default(now())
+}
+
+model CRM_Lead {
+  id        String      @id @default(cuid())
+  tenantId  String
+  tenant    CORE_Tenant @relation(fields: [tenantId], references: [id])
+  name      String
+  email     String?
+  phone     String
+  status    String      @default("NEW")
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model PROD_Batch {
+  id          String      @id @default(cuid())
+  tenantId    String
+  tenant      CORE_Tenant @relation(fields: [tenantId], references: [id])
+  batchNumber String      @unique
+  productName String
+  status      String      @default("PLANNED")
+  quantity    Float
+  unit        String      @default("UNITS")
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model PROD_MachineMetric {
+  id          String   @id @default(cuid())
+  tenantId    String
+  tenant      CORE_Tenant @relation(fields: [tenantId], references: [id])
+  equipmentId String
+  oee         Float
+  timestamp   DateTime @default(now())
+}
+
+model CORE_Visitor {
+  id            String   @id @default(cuid())
+  tenantId      String
+  tenant        CORE_Tenant @relation(fields: [tenantId], references: [id])
+  name          String
+  company       String?
+  purpose       String?
+  status        String   @default("EXPECTED")
+  checkInTime   String?
+  createdAt     DateTime @default(now())
 }

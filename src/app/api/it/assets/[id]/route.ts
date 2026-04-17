@@ -7,7 +7,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   return withTenant(request, async (tenantId: string) => {
-    const asset = await prisma.asset.findFirst({
+    const asset = await prisma.iT_Asset.findFirst({
       where: {
         id: params.id,
         tenantId
@@ -29,7 +29,7 @@ export async function PUT(
   return withTenant(request, async (tenantId: string) => {
     const body = await request.json();
 
-    const asset = await prisma.asset.updateMany({
+    const asset = await prisma.iT_Asset.updateMany({
       where: {
         id: params.id,
         tenantId
@@ -62,7 +62,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   return withTenant(request, async (tenantId: string) => {
-    const result = await prisma.asset.deleteMany({
+    const result = await prisma.iT_Asset.deleteMany({
       where: {
         id: params.id,
         tenantId

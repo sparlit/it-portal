@@ -4,7 +4,7 @@ import { withTenant } from '@/lib/api-middleware';
 
 export async function GET(request: NextRequest) {
   return withTenant(request, async (tenantId: string) => {
-    const settings = await prisma.setting.findMany({
+    const settings = await prisma.cORE_Setting.findMany({
       where: { tenantId }
     });
     return NextResponse.json(settings);
@@ -20,7 +20,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Key is required' }, { status: 400 });
     }
 
-    const setting = await prisma.setting.upsert({
+    const setting = await prisma.cORE_Setting.upsert({
       where: {
         tenantId_key: {
           tenantId,

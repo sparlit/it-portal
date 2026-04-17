@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     if (status) where.status = status;
     if (customerId) where.customerId = customerId;
 
-    const tickets = await prisma.laundryTicket.findMany({
+    const tickets = await prisma.lND_Ticket.findMany({
       where,
       include: {
         customer: {
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const ticket = await prisma.laundryTicket.create({
+    const ticket = await prisma.lND_Ticket.create({
       data: {
         tenantId,
         ticketId: generateTicketNumber(),

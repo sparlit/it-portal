@@ -4,7 +4,7 @@ import { withRBAC } from '@/lib/api-middleware';
 
 export async function GET(request: NextRequest) {
   return withRBAC(request, 'read', 'Asset', async (tenantId: string) => {
-    const servers = await prisma.serverMonitor.findMany({
+    const servers = await prisma.iT_ServerMonitor.findMany({
       where: { tenantId },
       orderBy: { name: 'asc' }
     });

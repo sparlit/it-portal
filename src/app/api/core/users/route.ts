@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs';
 
 export async function GET(request: NextRequest) {
   return withTenant(request, async (tenantId: string) => {
-    const users = await prisma.user.findMany({
+    const users = await prisma.cORE_User.findMany({
       where: { tenantId },
       select: {
         id: true,
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await prisma.user.create({
+    const user = await prisma.cORE_User.create({
       data: {
         tenantId,
         username: username.toLowerCase(),

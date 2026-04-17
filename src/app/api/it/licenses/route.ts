@@ -4,7 +4,7 @@ import { withTenant } from '@/lib/api-middleware';
 
 export async function GET(request: NextRequest) {
   return withTenant(request, async (tenantId: string) => {
-    const licenses = await prisma.license.findMany({
+    const licenses = await prisma.iT_License.findMany({
       where: { tenantId },
       orderBy: { updatedAt: 'desc' }
     });
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Software name is required' }, { status: 400 });
     }
 
-    const license = await prisma.license.create({
+    const license = await prisma.iT_License.create({
       data: {
         tenantId,
         software: body.software,

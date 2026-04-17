@@ -4,7 +4,7 @@ import { withTenant } from '@/lib/api-middleware';
 
 export async function GET(request: NextRequest) {
   return withTenant(request, async (tenantId: string) => {
-    const assets = await prisma.asset.findMany({
+    const assets = await prisma.iT_Asset.findMany({
       where: { tenantId },
       orderBy: { updatedAt: 'desc' }
     });
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const asset = await prisma.asset.create({
+    const asset = await prisma.iT_Asset.create({
       data: {
         tenantId,
         name: body.name,

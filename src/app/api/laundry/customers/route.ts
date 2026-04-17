@@ -4,7 +4,7 @@ import { withTenant } from '@/lib/api-middleware';
 
 export async function GET(request: NextRequest) {
   return withTenant(request, async (tenantId: string) => {
-    const customers = await prisma.laundryCustomer.findMany({
+    const customers = await prisma.lND_Customer.findMany({
       where: { tenantId },
       orderBy: { name: 'asc' }
     });
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Name and phone are required' }, { status: 400 });
     }
 
-    const customer = await prisma.laundryCustomer.create({
+    const customer = await prisma.lND_Customer.create({
       data: {
         tenantId,
         name,

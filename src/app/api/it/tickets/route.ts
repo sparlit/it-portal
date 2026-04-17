@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     if (status) where.status = status;
     if (priority) where.priority = priority;
 
-    const tickets = await prisma.iTTicket.findMany({
+    const tickets = await prisma.iT_Ticket.findMany({
       where,
       orderBy: { createdAt: 'desc' }
     });
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const ticket = await prisma.iTTicket.create({
+    const ticket = await prisma.iT_Ticket.create({
       data: {
         tenantId,
         ticketId: generateTicketNumber(),

@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     if (status) where.status = status;
     if (customerId) where.customerId = customerId;
 
-    const orders = await prisma.laundryOrder.findMany({
+    const orders = await prisma.lND_Order.findMany({
       where,
       include: {
         customer: { select: { name: true, phone: true } },
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
 
     const orderNumber = `LND-${Date.now().toString().slice(-6)}`;
 
-    const order = await prisma.laundryOrder.create({
+    const order = await prisma.lND_Order.create({
       data: {
         tenantId,
         orderNumber,

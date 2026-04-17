@@ -4,7 +4,7 @@ import { withTenant } from '@/lib/api-middleware';
 
 export async function GET(request: NextRequest) {
   return withTenant(request, async (tenantId: string) => {
-    const services = await prisma.laundryService.findMany({
+    const services = await prisma.lND_Service.findMany({
       where: { tenantId },
       orderBy: { category: 'asc' }
     });
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const service = await prisma.laundryService.create({
+    const service = await prisma.lND_Service.create({
       data: {
         tenantId,
         name,
