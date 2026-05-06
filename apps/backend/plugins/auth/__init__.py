@@ -8,7 +8,7 @@ from ...schemas.auth import Token, User
 from typing import List, Optional
 from pydantic import BaseModel
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 class LoginRequest(BaseModel):
     username: str

@@ -9,10 +9,17 @@ class BasePlugin:
     name: str = "base_plugin"
     description: str = "Base plugin description"
     version: str = "0.1.0"
+    permissions: list[str] = []
     
     def __init__(self):
-        self.router = APIRouter(prefix=f"/{self.name}", tags=[self.name])
+        self.router = APIRouter(prefix=f"/api/{self.name}", tags=[self.name])
         self.setup_routes()
+
+    def get_router(self) -> APIRouter:
+        """
+        Expose department-specific endpoints.
+        """
+        return self.router
 
     def setup_routes(self):
         """

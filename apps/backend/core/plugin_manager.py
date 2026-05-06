@@ -15,6 +15,7 @@ class PluginManager:
     def load_plugins(self):
         """
         Dynamically load plugins from the plugins directory.
+        Includes support for nested plugins in the departments directory.
         """
         # Get the absolute path to the plugins directory
         current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -26,13 +27,24 @@ class PluginManager:
             return
 
         # Determine the package prefix
-        # This assumes the backend is running as part of a package
         package_prefix = "apps.backend"
         
+        # Load main level plugins
         for item in os.listdir(plugins_path):
             item_path = os.path.join(plugins_path, item)
             if os.path.isdir(item_path) and os.path.exists(os.path.join(item_path, "__init__.py")):
-                module_path = f"{package_prefix}.{self.plugins_dir}.{item}"
+                if item == "departments":
+                    # Load nested department plugins
+                    self._load_nested_plugins(item_path, f"{package_prefix}.{self.plugins_dir}.{item}")
+                else:
+                    module_path = f"{package_prefix}.{self.plugins_dir}.{item}"
+                    self._load_plugin_from_module(module_path)
+
+    def _load_nested_plugins(self, path: str, package_prefix: str):
+        for item in os.listdir(path):
+            item_path = os.path.join(path, item)
+            if os.path.isdir(item_path) and os.path.exists(os.path.join(item_path, "__init__.py")):
+                module_path = f"{package_prefix}.{item}"
                 self._load_plugin_from_module(module_path)
 
     def _load_plugin_from_module(self, module_path: str):
@@ -42,7 +54,7 @@ class PluginManager:
                 if inspect.isclass(obj) and issubclass(obj, BasePlugin) and obj is not BasePlugin:
                     plugin_instance = obj()
                     self.plugins[plugin_instance.name] = plugin_instance
-                    self.app.include_router(plugin_instance.router)
+                    self.app.include_router(plugin_instance.get_router())
                     print(f"Loaded plugin: {plugin_instance.name}")
         except Exception as e:
             print(f"Failed to load plugin from {module_path}: {e}")
